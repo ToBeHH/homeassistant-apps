@@ -1,4 +1,4 @@
-# Handoff – Stand 24.10.2026 (nach Phase 2.2)
+# Handoff – Stand 24.10.2026 (nach Phase 2.2a)
 
 Übergabe aus der Claude-Chat-Sitzung an die Weiterarbeit in VS Code (mit Claude Code).
 Projektregeln stehen in [CLAUDE.md](CLAUDE.md), der Plan in [TODO.md](TODO.md).
@@ -27,9 +27,9 @@ Entscheidung: **HA-Base-Image + Zimi per pip** (Details in TODO.md 2.1).
   absichtlich (in Zimi optionale Imports).
 - Dienst `rootfs/etc/services.d/zimi/run`: `ZIMI_DATA_DIR=/data/zimi`, `ZIMI_OFFLINE=1`, `ZIMI_BT=off`, `ZIMI_NEARBY=off`,
   `ZIMI_MANAGE=0`, `ZIMI_AUTO_UPDATE=0`.
-- Watchdog auf `/health`, `backup_exclude` für Zimis Indizes/Caches.
+- Healthcheck auf `/health`, `backup_exclude` für Zimis Indizes/Caches.
 - Lokal getestet (Docker): Build 159 MB, `/health`, Suche in einer kleinen ZIM,
-  Start mit `--network none`, RAM ca. 55–65 MiB. **Nicht** getestet: bashio und Watchdog
+  Start mit `--network none`, RAM ca. 55–65 MiB. **Nicht** getestet: bashio und Healthcheck
   unter dem Supervisor – beim ersten Test auf dem HA-Host prüfen.
 
 ## Phase 2.2 – erledigt (Zimi-Konfiguration)
@@ -44,19 +44,32 @@ Entscheidung: **HA-Base-Image + Zimi per pip** (Details in TODO.md 2.1).
   Verbindungen auf „off“.
 - Lokal getestet: Datei beim Start, Hinzufügen, Ersetzen, Löschen.
 
-## Nächster Schritt: Phase 2.2a – eigener Downloader
+## Phase 2.2a – erledigt (Downloader, Offline Knowledge 0.2.0)
 
-Regeln, die aus 2.2 folgen:
-- In `<data_path>/zim` erst als `<datei>.zim.part` schreiben, dann umbenennen, dann die
-  alte Ausgabe löschen.
-- Startlücke: In den ersten ~30 s nach dem Zimi-Start erkennt Zimi neue Dateien nicht
-  (der erste Watcher-Durchlauf nimmt den Ordner als Ausgangsstand). Downloader wartet
-  60 s nach dem Zimi-Start oder prüft über `/list` und startet Zimi bei Bedarf neu.
+- Python-Paket `offline_knowledge/downloader/okdl/` (nur stdlib), im Image unter
+  `/opt/okdl`, s6-Dienst `downloader`. Ablauf je Durchlauf: Speicherort prüfen →
+  Katalog → Plan (`plan.py`) → Platz-Check → Downloads (kleinste zuerst) → Aufräumen.
+- Profile in `okdl/profiles.json`. Status in `/data/downloader/status.json`.
+- Neue Optionen `download_window`, `download_limit`; optionaler Port 8899 für Zimi.
+- Healthcheck jetzt als Docker-`HEALTHCHECK` (App-Linter lehnt `watchdog` ab – das war
+  der rote CI-Lauf nach dem Push von 0.1.0).
+- Getestet: 41 Unit-Tests (macOS Python 3.15 und Image-Python 3.12); im Image Ende-zu-
+  Ende mit echtem Katalog und Mirror (`devdocs_en_bash`), Zimi übernimmt die Datei nach
+  ~45 s. App-Linter-Regeln lokal nachgebaut (`uv run --with jsonschema --with pyyaml`
+  mit `src/lint.py` und `src/config.schema.json` aus `frenck/action-addon-linter`).
 
-Katalog: `https://library.kiwix.org/catalog/v2/entries` (leitet um, `curl -L`); Einträge
-haben `<name>`, `length` und `.meta4`-Links (Mirror-Liste mit Prüfsummen).
-Sprache/Umfang für den Downloader klären: Python im selben venv (stdlib reicht für
-OPDS/XML/HTTP) – passt zu „Unit-Tests für Katalog-Auflösung“.
+## Nächster Schritt: Test auf dem HA-Host, dann 2.5 (Ingress/Startseite)
+
+Test über das GHCR-Image:
+1. GHCR-Paket `ha-app-offline-knowledge` muss **public** sein.
+2. Repo in HA hinzufügen, App installieren, `data_path` z. B. `/share/offline_knowledge`
+   (Ordner vorher anlegen, z. B. per Samba/File-Editor), Profil `custom`,
+   `zim_sources: [devdocs_en_bash]`, unter Netzwerk Port 8899 setzen.
+3. Prüfen: Log (beide Dienste), Healthcheck-Status, `http://<host>:8899`, dann Profil
+   `slim` mit kleinem Zeitfenster/Limit.
+
+Offen danach: Ingress (Zimi unter Pfad-Präfix? sonst nginx), Landing-Page mit Status,
+CyberChef (2.3), Karten (2.4), MCP (2.6), `addon_stdin` für manuelles Update (4).
 
 ## Wissen aus der Recherche
 

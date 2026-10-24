@@ -66,6 +66,23 @@ jobs:
       - name: 🚀 Run yamllint
         run: pipx run yamllint --strict .
 
+  unittest:
+    name: Downloader tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Check out code from GitHub
+        uses: actions/checkout@v7.0.1
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v7.0.0
+        with:
+          # Same minor version as python3 in the app image (Alpine 3.23)
+          python-version: "3.12"
+
+      - name: 🚀 Run unit tests
+        working-directory: offline_knowledge/downloader
+        run: python -m unittest discover -t . -s tests -v
+
   shellcheck:
     name: ShellCheck
     runs-on: ubuntu-latest

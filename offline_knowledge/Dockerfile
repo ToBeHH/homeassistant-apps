@@ -29,8 +29,15 @@ RUN apk add --no-cache \
     && python3 -c "import libzim, zimi.server" \
     && find /opt/zimi -name '__pycache__' -prune -exec rm -rf {} +
 
+# Own content downloader (stdlib only), runs in the same venv.
+COPY downloader/okdl /opt/okdl/okdl
+
 COPY rootfs /
 RUN chmod a+x /etc/services.d/*/run /etc/services.d/*/finish
+
+# The first start may build title indexes for every ZIM, hence the long grace.
+HEALTHCHECK --interval=60s --timeout=10s --start-period=15m --retries=3 \
+    CMD ["curl", "-fsS", "-o", "/dev/null", "http://127.0.0.1:8899/health"]
 
 LABEL \
     org.opencontainers.image.title="Home Assistant App: Offline Knowledge" \

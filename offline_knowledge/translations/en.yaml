@@ -8,8 +8,8 @@ configuration:
   profile:
     name: Content profile
     description: >-
-      slim (about 30 GB), standard (about 150 GB), full (about 300 GB) or custom
-      (only the sources listed below).
+      Per language: slim (about 20–25 GB), standard (about 60–75 GB), full (about
+      75–150 GB) or custom (only the sources listed below).
   languages:
     name: Languages
     description: Language codes for the content, e.g. de and en.
@@ -21,3 +21,13 @@ configuration:
   prune:
     name: Remove deselected content
     description: Delete content that is no longer selected. Off by default.
+  download_window:
+    name: Download window
+    description: >-
+      Only download in this daily time window, e.g. 01:00-06:00. Empty means any time.
+  download_limit:
+    name: Download speed limit
+    description: Maximum download speed in KB/s. 0 means no limit.
+network:
+  8899/tcp: >-
+    Library web interface. Off by default; only open it in a trusted local network.

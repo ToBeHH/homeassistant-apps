@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.0
+
+- Own content downloader: reads the Kiwix catalog, resolves each ZIM name to its newest
+  file and keeps `<data_path>/zim` in line with `profile`, `languages` and
+  `zim_sources`. Downloads resume after interruptions, are checked against the
+  published SHA-256 and only appear under their final name when complete. The old
+  edition is deleted after the new one is in place.
+- Checks for updates at start and then once a day.
+- New options `download_window` (e.g. `01:00-06:00`) and `download_limit` (KB/s).
+- Optional port 8899 for the library web interface, off by default.
+- Health check moved from the `watchdog` option to a Docker `HEALTHCHECK`.
+
 ## 0.1.0
 
 - Zimi 1.14.1 library server, installed from PyPI on the Home Assistant base image.

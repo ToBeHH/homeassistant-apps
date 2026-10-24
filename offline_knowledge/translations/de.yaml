@@ -8,8 +8,8 @@ configuration:
   profile:
     name: Inhaltsprofil
     description: >-
-      slim (ca. 30 GB), standard (ca. 150 GB), full (ca. 300 GB) oder custom
-      (nur die unten aufgeführten Quellen).
+      Je Sprache: slim (ca. 20–25 GB), standard (ca. 60–75 GB), full (ca.
+      75–150 GB) oder custom (nur die unten aufgeführten Quellen).
   languages:
     name: Sprachen
     description: Sprachcodes für die Inhalte, z. B. de und en.
@@ -21,3 +21,15 @@ configuration:
   prune:
     name: Abgewählte Inhalte entfernen
     description: Inhalte löschen, die nicht mehr ausgewählt sind. Standardmäßig aus.
+  download_window:
+    name: Download-Zeitfenster
+    description: >-
+      Nur in diesem täglichen Zeitfenster herunterladen, z. B. 01:00-06:00. Leer
+      bedeutet jederzeit.
+  download_limit:
+    name: Download-Geschwindigkeit
+    description: Höchste Download-Geschwindigkeit in KB/s. 0 bedeutet ohne Begrenzung.
+network:
+  8899/tcp: >-
+    Weboberfläche der Bibliothek. Standardmäßig aus; nur in einem vertrauenswürdigen
+    lokalen Netz öffnen.

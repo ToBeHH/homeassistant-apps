@@ -7,3 +7,5 @@
 *.pmtiles
 data/
 tmp/
+__pycache__/
+*.pyc

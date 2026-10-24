@@ -123,7 +123,8 @@ Legende: `[ ]` offen · `[x]` erledigt · `[?]` Entscheidung nötig
       in `data_path` (unter `/share` bzw. `/media`) und damit gar nicht im App-Backup;
       im vollen HA-Backup muss man den Ordner selbst abwählen (in DOCS.md vermerkt).
 - [x] Watchdog/Healthcheck (Zimi `/health`)
-      --> `watchdog: http://[HOST]:[PORT:8899]/health` in `config.yaml`
+      --> Docker-`HEALTHCHECK` im Dockerfile (der App-Linter lehnt `watchdog` als
+      veraltet ab)
 - [ ] Auf echtem HA-Host testen (bashio/Supervisor-API und Watchdog lassen sich lokal
       nicht prüfen; lokal getestet: Build, `/health`, Suche, Start ohne Netzwerk)
 
@@ -153,25 +154,52 @@ Legende: `[ ]` offen · `[x]` erledigt · `[?]` Entscheidung nötig
       erst beim nächsten Start erkannt → Regel für den Downloader (2.2a).
 
 ### 2.2a Downloader (eigen, engine-unabhängig)
-- [ ] Kiwix-Katalog (OPDS) lesen; ZIM-Namen ohne Datum (z. B. `wikipedia_de_all_maxi`)
+
+Umgesetzt in Python (nur Standardbibliothek) unter `offline_knowledge/downloader/okdl/`,
+Tests unter `offline_knowledge/downloader/tests/` (laufen in CI, Python 3.12 wie im Image).
+Eigener s6-Dienst `downloader`, Abgleich beim Start und dann alle 24 h (nach Fehlern
+stündlich).
+
+- [x] Kiwix-Katalog (OPDS) lesen; ZIM-Namen ohne Datum (z. B. `wikipedia_de_all_maxi`)
       auf die jeweils neueste Datei auflösen
-- [ ] Optionen: `profile` (`slim`/`standard`/`full`/`custom`), `languages`
+      --> Gesamtkatalog `…/catalog/v2/entries?count=-1` (4,4 MB, ~3700 Einträge),
+      Schlüssel = `name` + `_` + `flavour`; letzte Kopie als Fallback in
+      `/data/downloader/catalog.xml`
+- [x] Optionen: `profile` (`slim`/`standard`/`full`/`custom`), `languages`
       (z. B. `de`, `en`), `zim_sources` (Zusatzliste bzw. vollständige Liste bei `custom`)
-- [ ] Profile als Datei im Repo definieren (Profil × Sprache → ZIM-Namen), damit
+- [x] Profile als Datei im Repo definieren (Profil × Sprache → ZIM-Namen), damit
       Anpassungen ohne Codeänderung möglich sind
-- [ ] Abgleich Soll/Ist: fehlende laden, veraltete ersetzen, abgewählte entfernen
+      --> `okdl/profiles.json`: je Profil eine Liste pro Sprache, `*` als Vorlage mit
+      `{lang}` für alle übrigen Sprachen. Größen (10/2026): slim de 20 / en 25 GB,
+      standard de 58 / en 72 GB, full de 73 / en 150 GB. Ausgelassen wegen Größe:
+      `gutenberg_en_all` (221 GB).
+- [x] Abgleich Soll/Ist: fehlende laden, veraltete ersetzen, abgewählte entfernen
       (Entfernen nur nach Option `prune: true`)
-- [ ] Download robust: fortsetzbar (HTTP Range), Prüfsumme (SHA-256/MD5 vom Mirror),
+      --> Eine lokal neuere Ausgabe wird nicht durch eine ältere ersetzt. Namen, die
+      der Katalog nicht kennt, werden übersprungen und lokal nicht angefasst.
+- [x] Download robust: fortsetzbar (HTTP Range), Prüfsumme (SHA-256/MD5 vom Mirror),
       erst in `.part`, dann atomar umbenennen; alte Version erst danach löschen
       (Name muss `<datei>.zim.part` sein, also nicht auf `.zim` enden, sonst sieht Zimi
       die halbe Datei)
-- [ ] Startlücke des Zimi-Watchers abfangen: in den ersten 60 s nach Zimi-Start nichts
+      --> Mirrors aus der `.meta4` nach Priorität (nur https), Fallback auf die
+      Download-URL; Abbruch mitten im Download → nächster Mirror setzt fort;
+      falsche Prüfsumme → `.part` weg, nächster Mirror
+- [x] Startlücke des Zimi-Watchers abfangen: in den ersten 60 s nach Zimi-Start nichts
       in `<data_path>/zim` umbenennen, oder nach dem Umbenennen über `/list` prüfen und
       Zimi bei Bedarf neu starten
-- [ ] Speicherplatz-Check vor jedem Download (Summe aller geplanten Downloads + Puffer)
-- [ ] Bandbreite/Zeitfenster als Option (nachts)
-- [ ] Status als JSON-Datei für Landing-Page und Log (geplant, läuft, fertig, Fehler)
-- [ ] Unit-Tests für Katalog-Auflösung und Abgleich
+      --> Dienst `downloader` wartet auf `/health` und dann 60 s
+- [x] Speicherplatz-Check vor jedem Download (Summe aller geplanten Downloads + Puffer)
+      --> Puffer max(2 GB, 2 %); Gesamtsumme nur als Warnung, je Download wird geprüft
+      und übersprungen, was nicht passt (kleinste zuerst)
+- [x] Bandbreite/Zeitfenster als Option (nachts)
+      --> `download_limit` (KB/s), `download_window` (`HH:MM-HH:MM`, auch über
+      Mitternacht); laufender Download pausiert außerhalb und setzt später fort
+- [x] Status als JSON-Datei für Landing-Page und Log (geplant, läuft, fertig, Fehler)
+      --> `/data/downloader/status.json`
+- [x] Unit-Tests für Katalog-Auflösung und Abgleich
+      --> 41 Tests inkl. lokalem HTTP-Server mit Range (Fortsetzen, Mirror-Wechsel,
+      Prüfsumme, Zeitfenster, Platzmangel, kein Speicherort → keine Anfrage)
+- [ ] Manuelles Auslösen per `hassio.addon_stdin` (siehe Abschnitt 4)
 
 ### 2.3 CyberChef
 - [ ] Release-ZIP beim Image-Build laden (Version gepinnt, Prüfsumme)
@@ -192,6 +220,7 @@ Legende: `[ ]` offen · `[x]` erledigt · `[?]` Entscheidung nötig
 - [ ] HA-Ingress als Hauptzugang (HA-Login inklusive); relative Pfade testen.
       Prüfen, ob Zimi unter Ingress-Pfad läuft – sonst eigener Port für Zimi.
 - [ ] Optionale LAN-Ports (Zimi, MCP) in `config.yaml`, standardmäßig aus
+      (Zimi 8899 erledigt in 0.2.0, MCP folgt)
 - [ ] Nicht fürs Internet gedacht: in DOCS.md deutlich dokumentieren
 
 ### 2.6 MCP-Server

@@ -1,0 +1,78 @@
+{
+  "_comment": [
+    "Content profiles: profile -> language -> Kiwix ZIM names without date.",
+    "'*' is the template for languages without their own list; {lang} is replaced",
+    "by the language code. Names missing from the Kiwix catalog are skipped with a",
+    "warning. Sizes per language as of 2026-10: slim de 20 GB / en 25 GB,",
+    "standard de 58 GB / en 72 GB, full de 73 GB / en 150 GB."
+  ],
+  "slim": {
+    "de": [
+      "wikipedia_de_all_nopic",
+      "wiktionary_de_all_nopic",
+      "wikivoyage_de_all_nopic"
+    ],
+    "en": [
+      "wikipedia_en_all_mini",
+      "wiktionary_en_all_nopic",
+      "wikivoyage_en_all_nopic",
+      "wikipedia_en_medicine_nopic"
+    ],
+    "*": [
+      "wikipedia_{lang}_all_mini",
+      "wiktionary_{lang}_all_nopic",
+      "wikivoyage_{lang}_all_nopic"
+    ]
+  },
+  "standard": {
+    "de": [
+      "wikipedia_de_all_maxi",
+      "wiktionary_de_all_nopic",
+      "wikivoyage_de_all_maxi",
+      "wikibooks_de_all_nopic",
+      "ifixit_de_all"
+    ],
+    "en": [
+      "wikipedia_en_all_nopic",
+      "wiktionary_en_all_nopic",
+      "wikivoyage_en_all_maxi",
+      "wikibooks_en_all_nopic",
+      "wikipedia_en_medicine_maxi",
+      "ifixit_en_all"
+    ],
+    "*": [
+      "wikipedia_{lang}_all_nopic",
+      "wiktionary_{lang}_all_nopic",
+      "wikivoyage_{lang}_all_maxi"
+    ]
+  },
+  "full": {
+    "de": [
+      "wikipedia_de_all_maxi",
+      "wiktionary_de_all_nopic",
+      "wikivoyage_de_all_maxi",
+      "wikibooks_de_all_maxi",
+      "wikiquote_de_all_maxi",
+      "wikisource_de_all_maxi",
+      "wikiversity_de_all_maxi",
+      "ifixit_de_all",
+      "gutenberg_de_all"
+    ],
+    "en": [
+      "wikipedia_en_all_maxi",
+      "wiktionary_en_all_nopic",
+      "wikivoyage_en_all_maxi",
+      "wikibooks_en_all_maxi",
+      "wikiquote_en_all_maxi",
+      "wikipedia_en_medicine_maxi",
+      "wikem_en_all_maxi",
+      "ifixit_en_all"
+    ],
+    "*": [
+      "wikipedia_{lang}_all_maxi",
+      "wiktionary_{lang}_all_nopic",
+      "wikivoyage_{lang}_all_maxi"
+    ]
+  },
+  "custom": {}
+}

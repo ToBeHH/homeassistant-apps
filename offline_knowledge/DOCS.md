@@ -1,7 +1,8 @@
 # Offline Knowledge
 
-> **Work in progress.** The library server runs, but there is no downloader, web access
-> or MCP endpoint yet. ZIM files you put into `<data_path>/zim` yourself are picked up.
+> **Work in progress.** Library and downloader work. Access through the Home Assistant
+> sidebar (ingress), maps, CyberChef and the MCP endpoint are still missing; for now the
+> library is reachable on the optional port 8899.
 
 Offline Knowledge keeps a copy of the world's knowledge on your Home Assistant host so it
 stays available without an internet connection:
@@ -25,15 +26,34 @@ contain all downloaded content.
 
 ZIM files live in `<data_path>/zim`. The library checks this folder every 30 seconds;
 new, replaced or removed files show up within about a minute. If you copy files in by
-hand, copy them under a name that does not end in `.zim` and rename them when the copy
-is complete.
+hand, copy them under a name ending in `.tmp` and rename them when the copy is complete.
+Names ending in `.zim.part` belong to the downloader.
 
-| Profile | Approximate size |
-| --- | --- |
-| `slim` | 30 GB |
-| `standard` | 150 GB |
-| `full` | 300 GB |
-| `custom` | depends on `zim_sources` |
+## Content
+
+The downloader looks up every selected source in the [Kiwix catalog](https://library.kiwix.org)
+and keeps the newest edition in `<data_path>/zim`. It runs at start and then once a day.
+What each profile contains is defined per language in
+[`profiles.json`](https://github.com/ToBeHH/homeassistant-apps/blob/main/offline_knowledge/downloader/okdl/profiles.json).
+
+| Profile | `de` | `en` | other languages |
+| --- | --- | --- | --- |
+| `slim` | Wikipedia without pictures, Wiktionary, Wikivoyage (about 20 GB) | Wikipedia intro sections only, Wiktionary, Wikivoyage, WikiMed (about 25 GB) | Wikipedia intros, Wiktionary, Wikivoyage |
+| `standard` | Wikipedia with pictures, Wiktionary, Wikivoyage, Wikibooks, iFixit (about 58 GB) | Wikipedia without pictures, Wiktionary, Wikivoyage, Wikibooks, WikiMed, iFixit (about 72 GB) | Wikipedia without pictures, Wiktionary, Wikivoyage |
+| `full` | `standard` plus Wikiquote, Wikisource, Wikiversity, Project Gutenberg (about 73 GB) | Wikipedia with pictures, Wiktionary, Wikivoyage, Wikibooks, Wikiquote, WikiMed, WikEM, iFixit (about 150 GB) | Wikipedia with pictures, Wiktionary, Wikivoyage |
+| `custom` | only `zim_sources` | | |
+
+Sizes as of October 2026. Sources a language does not have are skipped (see the log).
+
+Downloads resume after an interruption, are checked against the published SHA-256
+checksum and appear under their final name only when complete. Before each download the
+downloader checks the free space (download plus a reserve of 2 GB or 2 %, whichever is
+larger) and skips what does not fit.
+
+The current state is written to `/data/downloader/status.json` inside the app.
+
+To try the app with very little data, use the `custom` profile with
+`zim_sources: [devdocs_en_bash]` (0.5 MB).
 
 During updates the old and the new version of a file exist side by side for a short time,
 so keep some spare space.
@@ -46,7 +66,15 @@ so keep some spare space.
 | `profile` | `slim`, `standard`, `full` or `custom`. |
 | `languages` | Language codes, e.g. `de`, `en`. |
 | `zim_sources` | Extra ZIM names without date, e.g. `wikipedia_de_all_maxi`. For `custom`, the complete list. |
-| `prune` | Delete content that is no longer selected (default: off). |
+| `prune` | Delete content that is no longer selected (default: off). Older editions of selected content are always replaced. |
+| `download_window` | Only download in this daily window, e.g. `01:00-06:00`. A running download pauses outside it and resumes later. Empty: any time. |
+| `download_limit` | Maximum download speed in KB/s, `0` for no limit. |
+
+## Network
+
+| Port | Description |
+| --- | --- |
+| 8899/tcp | Library web interface and API. Off by default. Set a host port under **Network** to use it in your local network. |
 
 ## Security
 

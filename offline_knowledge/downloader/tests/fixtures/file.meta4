@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metalink xmlns="urn:ietf:params:xml:ns:metalink">
+  <generator>MirrorBrain/2.19.0</generator>
+  <file name="devdocs_en_bash_2026-10.zim">
+    <size>572117</size>
+    <hash type="md5">16955e8143f5972926ac4460f927ba86</hash>
+    <hash type="sha-1">1e9361e0816b853e3e30b79a3324dfadb3349a1e</hash>
+    <hash type="sha-256">EA4AFB04DDF90F31363829EF9FA2485405DC05BD1FC62B4626245FE70C24735D</hash>
+    <pieces length="4194304" type="sha-1">
+      <hash>1e9361e0816b853e3e30b79a3324dfadb3349a1e</hash>
+    </pieces>
+    <url location="nl" priority="2">https://ftp.nluug.nl/pub/kiwix/zim/devdocs/devdocs_en_bash_2026-10.zim</url>
+    <url location="de" priority="1">https://ftp.fau.de/kiwix/zim/devdocs/devdocs_en_bash_2026-10.zim</url>
+    <url location="xx" priority="3">http://insecure.example/devdocs_en_bash_2026-10.zim</url>
+  </file>
+</metalink>

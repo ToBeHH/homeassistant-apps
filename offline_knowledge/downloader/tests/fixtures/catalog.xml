@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"
+      xmlns:dc="http://purl.org/dc/terms/"
+      xmlns:opds="https://specs.opds.io/opds-1.2">
+  <id>test-catalog</id>
+  <title>Filtered Entries</title>
+  <entry>
+    <id>urn:uuid:1</id>
+    <title>Bash Docs</title>
+    <language>eng</language>
+    <name>devdocs_en_bash</name>
+    <flavour></flavour>
+    <link type="text/html" href="https://browse.library.kiwix.org/content/devdocs_en_bash_2026-10" />
+    <link rel="http://opds-spec.org/acquisition/open-access" type="application/x-zim" href="https://lb.download.kiwix.org/zim/devdocs/devdocs_en_bash_2026-10.zim.meta4" length="572416" />
+  </entry>
+  <entry>
+    <id>urn:uuid:2</id>
+    <title>Wikipedia</title>
+    <language>deu</language>
+    <name>wikipedia_de_all</name>
+    <flavour>nopic</flavour>
+    <link rel="http://opds-spec.org/acquisition/open-access" type="application/x-zim" href="https://lb.download.kiwix.org/zim/wikipedia/wikipedia_de_all_nopic_2026-10.zim.meta4" length="18590000000" />
+  </entry>
+  <entry>
+    <id>urn:uuid:3</id>
+    <title>Wiktionary</title>
+    <language>deu</language>
+    <name>wiktionary_de_all</name>
+    <flavour>nopic</flavour>
+    <link rel="http://opds-spec.org/acquisition/open-access" type="application/x-zim" href="https://lb.download.kiwix.org/zim/wiktionary/wiktionary_de_all_nopic_2026-10a.zim.meta4" length="1600000000" />
+  </entry>
+  <entry>
+    <id>urn:uuid:4</id>
+    <title>No file</title>
+    <name>broken_entry</name>
+  </entry>
+</feed>

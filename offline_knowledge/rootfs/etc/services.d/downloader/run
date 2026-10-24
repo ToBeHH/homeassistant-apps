@@ -1,0 +1,18 @@
+#!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
+# ==============================================================================
+# Offline Knowledge – content downloader
+# ==============================================================================
+
+# Zimi notices new files in <data_path>/zim only from its first folder check
+# on, about 30 s after it started. Wait for it, plus a margin.
+bashio::log.info "Downloader waiting for the library server"
+until curl -fs -o /dev/null http://127.0.0.1:8899/health; do
+    sleep 5
+done
+sleep 60
+
+bashio::log.info "Downloader starting"
+export PYTHONPATH=/opt/okdl
+export PYTHONUNBUFFERED=1
+exec python3 -m okdl --options /data/options.json --state-dir /data/downloader
