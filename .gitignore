@@ -1,0 +1,9 @@
+.DS_Store
+.vscode/
+.idea/
+.env
+# never commit content or local test data
+*.zim
+*.pmtiles
+data/
+tmp/

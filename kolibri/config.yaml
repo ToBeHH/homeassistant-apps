@@ -1,0 +1,25 @@
+# https://developers.home-assistant.io/docs/apps/configuration
+name: Kolibri
+version: "0.0.1"
+slug: kolibri
+description: >-
+  Kolibri offline learning platform, e.g. Khan Academy courses, available
+  without an internet connection.
+url: "https://github.com/ToBeHH/homeassistant-addons-public/tree/main/kolibri"
+stage: experimental
+arch:
+  - amd64
+init: false
+startup: services
+boot: auto
+map:
+  - share:rw
+  - media:rw
+options:
+  data_path: ""
+  channels: []
+schema:
+  data_path: str?
+  channels:
+    - str
+image: "ghcr.io/tobehh/ha-app-kolibri"

@@ -1,0 +1,33 @@
+# https://developers.home-assistant.io/docs/apps/configuration
+name: Offline Knowledge
+version: "0.0.1"
+slug: offline_knowledge
+description: >-
+  Wikipedia and other reference works, offline maps and data tools,
+  available without an internet connection.
+url: "https://github.com/ToBeHH/homeassistant-addons-public/tree/main/offline_knowledge"
+stage: experimental
+arch:
+  - amd64
+init: false
+startup: services
+boot: auto
+map:
+  - share:rw
+  - media:rw
+options:
+  data_path: ""
+  profile: slim
+  languages:
+    - en
+  zim_sources: []
+  prune: false
+schema:
+  data_path: str?
+  profile: list(slim|standard|full|custom)
+  languages:
+    - match(^[a-z]{2,3}$)
+  zim_sources:
+    - str
+  prune: bool
+image: "ghcr.io/tobehh/ha-app-offline-knowledge"

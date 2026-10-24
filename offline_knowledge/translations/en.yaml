@@ -1,0 +1,23 @@
+configuration:
+  data_path:
+    name: Storage location
+    description: >-
+      Folder for all content (ZIM files, maps, indexes), e.g. /share/offline_knowledge
+      or a folder on an external drive under /media. Nothing is downloaded until
+      this is set and the folder exists.
+  profile:
+    name: Content profile
+    description: >-
+      slim (about 30 GB), standard (about 150 GB), full (about 300 GB) or custom
+      (only the sources listed below).
+  languages:
+    name: Languages
+    description: Language codes for the content, e.g. de and en.
+  zim_sources:
+    name: Additional sources
+    description: >-
+      Extra Kiwix ZIM names without date, e.g. wikipedia_de_all_maxi. With the
+      custom profile this is the complete list.
+  prune:
+    name: Remove deselected content
+    description: Delete content that is no longer selected. Off by default.

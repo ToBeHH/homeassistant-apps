@@ -1,0 +1,26 @@
+#!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
+# ==============================================================================
+# Offline Knowledge – main service (phase 1 placeholder)
+# ==============================================================================
+
+declare data_path
+data_path=$(bashio::config 'data_path')
+
+bashio::log.info "Offline Knowledge $(bashio::addon.version) starting"
+bashio::log.info "Profile: $(bashio::config 'profile'), languages: $(bashio::config 'languages' | tr '\n' ' ')"
+
+if bashio::var.is_empty "${data_path}"; then
+    bashio::log.warning "No data_path configured. Nothing will be downloaded until a storage location is set."
+elif [[ ! -d "${data_path}" ]]; then
+    bashio::log.warning "data_path '${data_path}' does not exist. Nothing will be downloaded."
+elif [[ ! -w "${data_path}" ]]; then
+    bashio::log.warning "data_path '${data_path}' is not writable. Nothing will be downloaded."
+else
+    bashio::log.info "Storage location: ${data_path}"
+fi
+
+bashio::log.info "This is a scaffold build; services are not implemented yet."
+
+# Keep the service running so the app shows as started.
+exec sleep 2147483647

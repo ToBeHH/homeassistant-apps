@@ -1,0 +1,9 @@
+configuration:
+  data_path:
+    name: Storage location
+    description: >-
+      Folder for Kolibri content, e.g. /share/kolibri or a folder on an external
+      drive under /media. Nothing is downloaded until this is set and the folder exists.
+  channels:
+    name: Channels
+    description: Kolibri channel IDs to import, e.g. a Khan Academy channel.

@@ -1,0 +1,10 @@
+configuration:
+  data_path:
+    name: Speicherort
+    description: >-
+      Ordner für die Kolibri-Inhalte, z. B. /share/kolibri oder ein Ordner auf einer
+      externen Platte unter /media. Es wird nichts heruntergeladen, solange dieser
+      Pfad nicht gesetzt ist und der Ordner existiert.
+  channels:
+    name: Kanäle
+    description: Zu importierende Kolibri-Kanal-IDs, z. B. ein Khan-Academy-Kanal.

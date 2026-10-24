@@ -1,0 +1,23 @@
+configuration:
+  data_path:
+    name: Speicherort
+    description: >-
+      Ordner für alle Inhalte (ZIM-Dateien, Karten, Indizes), z. B. /share/offline_knowledge
+      oder ein Ordner auf einer externen Platte unter /media. Es wird nichts
+      heruntergeladen, solange dieser Pfad nicht gesetzt ist und der Ordner existiert.
+  profile:
+    name: Inhaltsprofil
+    description: >-
+      slim (ca. 30 GB), standard (ca. 150 GB), full (ca. 300 GB) oder custom
+      (nur die unten aufgeführten Quellen).
+  languages:
+    name: Sprachen
+    description: Sprachcodes für die Inhalte, z. B. de und en.
+  zim_sources:
+    name: Zusätzliche Quellen
+    description: >-
+      Weitere Kiwix-ZIM-Namen ohne Datum, z. B. wikipedia_de_all_maxi. Beim Profil
+      custom ist das die vollständige Liste.
+  prune:
+    name: Abgewählte Inhalte entfernen
+    description: Inhalte löschen, die nicht mehr ausgewählt sind. Standardmäßig aus.

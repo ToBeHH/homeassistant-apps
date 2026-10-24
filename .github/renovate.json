@@ -1,0 +1,51 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", "helpers:pinGitHubActionDigests"],
+
+  "enabledManagers": ["custom.regex", "dockerfile", "github-actions"],
+
+  "semanticCommits": "disabled",
+  "labels": ["dependencies"],
+  "timezone": "Europe/Berlin",
+
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Versions pinned in Dockerfiles with a '# renovate:' comment, e.g. Zimi, CyberChef, pmtiles, MapLibre, Kolibri",
+      "managerFilePatterns": ["/(^|/)Dockerfile$/"],
+      "matchStrings": [
+        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)(\\s+versioning=(?<versioning>\\S+))?\\s*\\nARG \\S+_VERSION=\"?(?<currentValue>[^\"\\s]+)\"?"
+      ],
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver-coerced{{/if}}"
+    }
+  ],
+
+  "packageRules": [
+    {
+      "description": "GitHub Actions: weekly",
+      "matchManagers": ["github-actions"],
+      "addLabels": ["github_actions"],
+      "schedule": ["before 8am on monday"]
+    },
+    {
+      "description": "Leave runner labels and action version inputs alone",
+      "matchManagers": ["github-actions"],
+      "matchDepTypes": ["github-runner", "uses-with"],
+      "enabled": false
+    },
+    {
+      "description": "Home Assistant actions that follow a branch float on purpose",
+      "matchManagers": ["github-actions"],
+      "matchPackageNames": ["home-assistant/**"],
+      "matchCurrentValue": "/^(dev|main|master)$/",
+      "pinDigests": false
+    },
+    {
+      "description": "App updates need a version bump and a changelog entry, which Renovate can't write",
+      "matchFileNames": ["offline_knowledge/**", "kolibri/**"],
+      "prBodyNotes": [
+        "Before merging, bump `version` in the app's `config.yaml` and add a matching entry to its `CHANGELOG.md`."
+      ]
+    }
+  ]
+}
