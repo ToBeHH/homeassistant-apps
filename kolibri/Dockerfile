@@ -10,5 +10,5 @@ RUN chmod a+x /etc/services.d/*/run /etc/services.d/*/finish
 LABEL \
     org.opencontainers.image.title="Home Assistant App: Kolibri" \
     org.opencontainers.image.description="Kolibri offline learning platform, available without an internet connection." \
-    org.opencontainers.image.source="https://github.com/ToBeHH/homeassistant-addons-public" \
+    org.opencontainers.image.source="https://github.com/ToBeHH/homeassistant-apps" \
     org.opencontainers.image.licenses="MIT"

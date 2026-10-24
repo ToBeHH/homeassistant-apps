@@ -22,12 +22,12 @@ with Project NOMAD or Crosstalk Solutions.
 
 Once released, add this repository to Home Assistant with one click:
 
-[![Open your Home Assistant instance and show the app store with this repository URL pre-filled.](https://my.home-assistant.io/badges/supervisor_store.svg)](https://my.home-assistant.io/redirect/supervisor_store/?repository_url=https%3A%2F%2Fgithub.com%2FToBeHH%2Fhomeassistant-addons-public)
+[![Open your Home Assistant instance and show the app store with this repository URL pre-filled.](https://my.home-assistant.io/badges/supervisor_store.svg)](https://my.home-assistant.io/redirect/supervisor_store/?repository_url=https%3A%2F%2Fgithub.com%2FToBeHH%2Fhomeassistant-apps)
 
 Or add it manually in the app store (formerly add-on store) under **⋮ → Repositories**:
 
 ```txt
-https://github.com/ToBeHH/homeassistant-addons-public
+https://github.com/ToBeHH/homeassistant-apps
 ```
 
 ## Storage

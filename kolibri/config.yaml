@@ -5,13 +5,12 @@ slug: kolibri
 description: >-
   Kolibri offline learning platform, e.g. Khan Academy courses, available
   without an internet connection.
-url: "https://github.com/ToBeHH/homeassistant-addons-public/tree/main/kolibri"
+url: "https://github.com/ToBeHH/homeassistant-apps/tree/main/kolibri"
 stage: experimental
 arch:
   - amd64
 init: false
 startup: services
-boot: auto
 map:
   - share:rw
   - media:rw

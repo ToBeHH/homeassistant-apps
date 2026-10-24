@@ -5,13 +5,12 @@ slug: offline_knowledge
 description: >-
   Wikipedia and other reference works, offline maps and data tools,
   available without an internet connection.
-url: "https://github.com/ToBeHH/homeassistant-addons-public/tree/main/offline_knowledge"
+url: "https://github.com/ToBeHH/homeassistant-apps/tree/main/offline_knowledge"
 stage: experimental
 arch:
   - amd64
 init: false
 startup: services
-boot: auto
 map:
   - share:rw
   - media:rw

@@ -11,5 +11,5 @@ RUN chmod a+x /etc/services.d/*/run /etc/services.d/*/finish
 LABEL \
     org.opencontainers.image.title="Home Assistant App: Offline Knowledge" \
     org.opencontainers.image.description="Wikipedia and other reference works, offline maps and data tools, available without an internet connection." \
-    org.opencontainers.image.source="https://github.com/ToBeHH/homeassistant-addons-public" \
+    org.opencontainers.image.source="https://github.com/ToBeHH/homeassistant-apps" \
     org.opencontainers.image.licenses="MIT"

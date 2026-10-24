@@ -1,3 +1,5 @@
 ignored:
-  # Base image is pinned via BUILD_FROM; apk pinning is handled per package where it matters.
+  # FROM ${BUILD_FROM}: the tag is pinned in the ARG default, hadolint can't see it.
+  - DL3006
+  # apk pinning is handled per package where it matters.
   - DL3018
