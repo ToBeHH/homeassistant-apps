@@ -9,7 +9,7 @@ Legende: `[ ]` offen · `[x]` erledigt · `[?]` Entscheidung nötig
 
 ## 0. Entscheidungen (vor dem Start)
 
-- [x] **D1 Repository.** Neues öffentliches Repo `ToBeHH/homeassistant-apps` (lokal: `homeassistant-addons-public`)
+- [x] **D1 Repository.** Neues öffentliches Repo `ToBeHH/homeassistant-apps`
   (dieses hier) oder die Add-ons ins bestehende `ToBeHH/homeassistant-addons` legen.
   *Vorschlag:* neues Repo, wie angelegt.
   --> Neues Repository
