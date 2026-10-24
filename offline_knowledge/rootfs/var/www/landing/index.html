@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Offline Knowledge</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Offline Knowledge</h1>
+    <span id="version" class="muted"></span>
+  </header>
+
+  <main>
+    <div id="alert" class="alert" hidden></div>
+
+    <section class="cards">
+      <article class="card">
+        <h2>Library</h2>
+        <p id="library-summary" class="muted">Checking…</p>
+        <p id="library-action"></p>
+      </article>
+      <article class="card">
+        <h2>Maps</h2>
+        <p class="muted">Not available yet.</p>
+      </article>
+      <article class="card">
+        <h2>CyberChef</h2>
+        <p class="muted">Not available yet.</p>
+      </article>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Downloads</h2>
+        <span id="state" class="badge"></span>
+      </div>
+      <dl class="facts">
+        <dt>Storage</dt><dd id="storage">–</dd>
+        <dt>Last check</dt><dd id="last-check">–</dd>
+        <dt>Last complete</dt><dd id="last-success">–</dd>
+        <dt>Next check</dt><dd id="next-check">–</dd>
+      </dl>
+      <div id="storage-bar" class="bar" hidden><span></span></div>
+      <table id="items" hidden>
+        <thead>
+          <tr><th>Source</th><th>Size</th><th>Status</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <p id="items-empty" class="muted" hidden>Nothing selected.</p>
+    </section>
+  </main>
+
+  <footer class="muted">
+    For your local network only. Content: Kiwix / Wikimedia and others, under their own licenses.
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

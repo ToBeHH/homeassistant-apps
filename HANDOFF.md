@@ -1,4 +1,4 @@
-# Handoff – Stand 24.10.2026 (nach Phase 2.2a)
+# Handoff – Stand 24.10.2026 (nach Phase 2.5)
 
 Übergabe aus der Claude-Chat-Sitzung an die Weiterarbeit in VS Code (mit Claude Code).
 Projektregeln stehen in [CLAUDE.md](CLAUDE.md), der Plan in [TODO.md](TODO.md).
@@ -58,18 +58,28 @@ Entscheidung: **HA-Base-Image + Zimi per pip** (Details in TODO.md 2.1).
   ~45 s. App-Linter-Regeln lokal nachgebaut (`uv run --with jsonschema --with pyyaml`
   mit `src/lint.py` und `src/config.schema.json` aus `frenck/action-addon-linter`).
 
-## Nächster Schritt: Test auf dem HA-Host, dann 2.5 (Ingress/Startseite)
+## Phase 2.5 – erledigt (Startseite/Ingress, Offline Knowledge 0.3.0)
+
+- Zimi kann nicht unter dem Ingress-Präfix laufen (absolute Pfade überall). Ingress
+  zeigt eine eigene Startseite (nginx, Port 8099), Zimi bleibt auf dem optionalen Port
+  8899; die Startseite verlinkt `http://<host>:<port>/`, wenn der Port gesetzt ist.
+- Startseite: Status je Quelle mit Fortschritt, Speicherplatz, Bibliotheksgröße,
+  Hinweis bei fehlendem Speicherort. Lokal im Browser geprüft (Desktop und 400 px).
+- Lokal bestätigt: Ohne die 60 s Wartezeit im `downloader`-Dienst fällt eine Datei in
+  Zimis Startlücke – die Wartezeit ist also nötig.
+
+## Nächster Schritt: Test auf dem HA-Host
 
 Test über das GHCR-Image:
-1. GHCR-Paket `ha-app-offline-knowledge` muss **public** sein.
-2. Repo in HA hinzufügen, App installieren, `data_path` z. B. `/share/offline_knowledge`
-   (Ordner vorher anlegen, z. B. per Samba/File-Editor), Profil `custom`,
-   `zim_sources: [devdocs_en_bash]`, unter Netzwerk Port 8899 setzen.
-3. Prüfen: Log (beide Dienste), Healthcheck-Status, `http://<host>:8899`, dann Profil
-   `slim` mit kleinem Zeitfenster/Limit.
+1. Repo in HA hinzufügen, App installieren.
+2. `data_path` auf einen existierenden Ordner (z. B. auf der externen Platte unter
+   `/media/…`), Profil `custom`, `zim_sources: [devdocs_en_bash]`, unter Netzwerk einen
+   Port für 8899 setzen.
+3. Prüfen: Startseite in der Seitenleiste, Log beider Dienste, Healthcheck, Link
+   „Open library“, dann Profil `slim` mit Zeitfenster/Limit.
 
-Offen danach: Ingress (Zimi unter Pfad-Präfix? sonst nginx), Landing-Page mit Status,
-CyberChef (2.3), Karten (2.4), MCP (2.6), `addon_stdin` für manuelles Update (4).
+Offen danach: CyberChef (2.3), Karten (2.4), MCP (2.6), `addon_stdin` für manuelles
+Update (4).
 
 ## Wissen aus der Recherche
 

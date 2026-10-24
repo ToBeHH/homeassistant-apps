@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.0
+
+- Start page in the Home Assistant sidebar (ingress): download status per source with
+  progress, free space on the storage location, size of the library and a link to it.
+- Shows a clear notice while no usable storage location is set.
+- Download progress is updated every few seconds; the log shows 10 % steps.
+- The library itself still opens on its own port (8899): Zimi builds absolute URLs and
+  can't run under the ingress path.
+
 ## 0.2.0
 
 - Own content downloader: reads the Kiwix catalog, resolves each ZIM name to its newest

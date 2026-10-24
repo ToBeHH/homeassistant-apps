@@ -1,8 +1,7 @@
 # Offline Knowledge
 
-> **Work in progress.** Library and downloader work. Access through the Home Assistant
-> sidebar (ingress), maps, CyberChef and the MCP endpoint are still missing; for now the
-> library is reachable on the optional port 8899.
+> **Work in progress.** Library, downloader and start page work. Maps, CyberChef and the
+> MCP endpoint are still missing.
 
 Offline Knowledge keeps a copy of the world's knowledge on your Home Assistant host so it
 stays available without an internet connection:
@@ -70,6 +69,16 @@ so keep some spare space.
 | `download_window` | Only download in this daily window, e.g. `01:00-06:00`. A running download pauses outside it and resumes later. Empty: any time. |
 | `download_limit` | Maximum download speed in KB/s, `0` for no limit. |
 
+## Access
+
+- **Start page:** *Open Web UI* or the **Offline Knowledge** entry in the sidebar. It
+  shows the download status, the free space and a link to the library. Home Assistant
+  takes care of the login.
+- **Library:** opens on its own port, because the library server can't run inside the
+  Home Assistant sidebar. Set a host port for `8899/tcp` under **Network** in the app
+  settings; the start page then links to it. The library has **no login of its own** –
+  anyone who can reach the port can read it.
+
 ## Network
 
 | Port | Description |
@@ -78,7 +87,12 @@ so keep some spare space.
 
 ## Security
 
-This app is meant for your local network only. Do not expose it to the internet.
+This app is meant for your local network only.
+
+- Do **not** forward port 8899 (or the MCP port, once there is one) on your router or
+  expose it through a reverse proxy to the internet. It has no login.
+- Use a VPN if you want to reach the library from outside.
+- The start page in the sidebar is protected by the Home Assistant login.
 
 ## Licenses
 

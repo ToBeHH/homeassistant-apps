@@ -13,7 +13,7 @@ from . import USER_AGENT
 log = logging.getLogger(__name__)
 
 CHUNK = 1024 * 1024
-PROGRESS_EVERY = 64 * CHUNK
+PROGRESS_SECONDS = 5
 
 
 class DownloadError(Exception):
@@ -173,7 +173,7 @@ def _fetch(url, part, have, size, digest, window, limiter, progress, timeout):
             raise DownloadError(f"server ignored the range request ({resp.status})")
         mode = "ab" if have else "wb"
         done = have
-        last_report = done
+        last_report = time.monotonic()
         with open(part, mode) as f:
             while True:
                 buf = resp.read(CHUNK)
@@ -184,9 +184,9 @@ def _fetch(url, part, have, size, digest, window, limiter, progress, timeout):
                     digest.update(buf)
                 done += len(buf)
                 limiter.take(len(buf))
-                if progress and done - last_report >= PROGRESS_EVERY:
+                if progress and time.monotonic() - last_report >= PROGRESS_SECONDS:
                     progress(done)
-                    last_report = done
+                    last_report = time.monotonic()
                 if not window.is_open():
                     f.flush()
                     raise OutsideWindow()

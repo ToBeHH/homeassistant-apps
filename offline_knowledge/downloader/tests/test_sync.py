@@ -82,6 +82,8 @@ class SyncTest(unittest.TestCase):
         self.assertEqual(st["state"], "idle")
         self.assertEqual(st["items"]["devdocs_en_bash"]["state"], "current")
         self.assertIn("last_success", st)
+        self.assertEqual(st["storage"]["path"], self.data)
+        self.assertGreater(st["storage"]["total"], 0)
 
         # Second run: nothing to do, only the catalog is fetched.
         with Server() as s:

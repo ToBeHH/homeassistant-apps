@@ -1,0 +1,23 @@
+#!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
+# ==============================================================================
+# Offline Knowledge – landing page (ingress)
+# ==============================================================================
+
+declare library_port
+
+# The host port for Zimi, if the user opened one under Network.
+library_port=$(bashio::addon.port "8899/tcp")
+if ! bashio::var.has_value "${library_port}" || [[ "${library_port}" == "null" ]]; then
+    library_port=null
+fi
+
+mkdir -p /run/landing
+jq -n \
+    --arg version "$(bashio::addon.version)" \
+    --argjson library_port "${library_port}" \
+    '{version: $version, library_port: $library_port}' \
+    > /run/landing/info.json
+
+bashio::log.info "Starting landing page"
+exec nginx -g "daemon off;"

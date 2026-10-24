@@ -45,6 +45,11 @@ def storage_problem(data_path):
     return None
 
 
+def storage_info(path):
+    usage = shutil.disk_usage(path)
+    return {"path": path, "free": usage.free, "total": usage.total}
+
+
 def reserve(total_bytes):
     return max(MIN_RESERVE, total_bytes // 50)
 
@@ -68,12 +73,13 @@ def run(opts, status, catalog_cache, catalog_url=catalog.CATALOG_URL):
     problem = storage_problem(opts.data_path)
     if problem:
         log.warning("%s. Nothing will be downloaded.", problem)
-        status.set(state="waiting_for_storage", message=problem)
+        status.set(state="waiting_for_storage", message=problem, storage=None)
         return False
 
     window = fetch.Window(opts.download_window)
     zim_dir = os.path.join(opts.data_path, "zim")
     os.makedirs(zim_dir, exist_ok=True)
+    status.set(storage=storage_info(opts.data_path))
 
     names, problems = selection.wanted(opts.profile, opts.languages, opts.zim_sources)
     for p in problems:
@@ -182,9 +188,15 @@ def _download_one(e, zim_dir, replaces, opts, window, status):
     status.set(state="downloading", message=e.filename)
     status.item(e.key, state="downloading", size=size, done=have)
 
+    logged = [-1]
+
     def progress(done):
         status.item(e.key, done=done)
-        log.info("%s: %.0f %%", e.filename, 100 * done / size if size else 0)
+        # Log every 10 %, the status file gets every update.
+        step = int(10 * done / size) if size else 0
+        if step > logged[0]:
+            logged[0] = step
+            log.info("%s: %d %%", e.filename, step * 10)
 
     while True:
         try:
@@ -214,4 +226,5 @@ def _download_one(e, zim_dir, replaces, opts, window, status):
     log.info("Finished %s", e.filename)
     status.item(e.key, state="current", done=size)
     _remove(zim_dir, replaces, f"replaced by {e.filename}")
+    status.set(storage=storage_info(opts.data_path))
     return True

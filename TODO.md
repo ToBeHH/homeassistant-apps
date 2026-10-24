@@ -215,13 +215,24 @@ stündlich).
 - [ ] Optional/später: Offline-Ortssuche (Geocoding)
 
 ### 2.5 Startseite und Zugriff
-- [ ] Landing-Page (nginx) mit Links zu Bibliothek, Karten, CyberChef und Status
+- [x] Landing-Page (nginx) mit Links zu Bibliothek, Karten, CyberChef und Status
       (Speicher, letzte Aktualisierung)
-- [ ] HA-Ingress als Hauptzugang (HA-Login inklusive); relative Pfade testen.
+      --> `rootfs/var/www/landing/` (statisch, nur relative Pfade), nginx auf 8099 liefert
+      `status.json` (Downloader), `info.json` (Version, Host-Port für Zimi, vom
+      `run`-Skript per bashio geschrieben) und `library/list`/`library/health` (Zimi).
+      Karten/CyberChef als Platzhalter-Karten, Links kommen mit 2.3/2.4.
+- [x] HA-Ingress als Hauptzugang (HA-Login inklusive); relative Pfade testen.
       Prüfen, ob Zimi unter Ingress-Pfad läuft – sonst eigener Port für Zimi.
+      --> **Zimi läuft nicht unter Ingress:** keine Präfix-Unterstützung, Hunderte
+      absolute Pfade im JavaScript (`/search`, `/w/…`, `/static/…`). Umschreiben per
+      `sub_filter`/Service-Worker wäre bei Zimis Release-Tempo zu zerbrechlich.
+      Ingress zeigt deshalb die Startseite; Zimi über eigenen Port, die Startseite
+      verlinkt ihn. nginx lässt nur `172.30.32.2` (Ingress-Gateway) und localhost zu.
 - [ ] Optionale LAN-Ports (Zimi, MCP) in `config.yaml`, standardmäßig aus
       (Zimi 8899 erledigt in 0.2.0, MCP folgt)
-- [ ] Nicht fürs Internet gedacht: in DOCS.md deutlich dokumentieren
+- [x] Nicht fürs Internet gedacht: in DOCS.md deutlich dokumentieren
+- [ ] Später prüfen: Zimi-Login (`ZIMI_PUBLIC_ACCESS=private` + Benutzer) für den
+      offenen Port – braucht `ZIMI_MANAGE=1`, also Abwägung gegen 2.2
 
 ### 2.6 MCP-Server
 - [ ] Umsetzung gemäß D4, Token-Pflicht

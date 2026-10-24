@@ -20,6 +20,7 @@ ENV PATH="/opt/zimi/bin:${PATH}"
 
 RUN apk add --no-cache \
         libstdc++ \
+        nginx \
         python3 \
     && python3 -m venv /opt/zimi \
     && pip install --no-cache-dir --no-deps \
