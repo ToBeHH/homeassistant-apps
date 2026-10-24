@@ -23,7 +23,10 @@ Note: `/share` and `/media` are separate folders in a full Home Assistant backup
 storage location is there, leave that folder out of your backups, or the backup will
 contain all downloaded content.
 
-ZIM files live in `<data_path>/zim`.
+ZIM files live in `<data_path>/zim`. The library checks this folder every 30 seconds;
+new, replaced or removed files show up within about a minute. If you copy files in by
+hand, copy them under a name that does not end in `.zim` and rename them when the copy
+is complete.
 
 | Profile | Approximate size |
 | --- | --- |

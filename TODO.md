@@ -128,15 +128,29 @@ Legende: `[ ]` offen · `[x]` erledigt · `[?]` Entscheidung nötig
       nicht prüfen; lokal getestet: Build, `/health`, Suche, Start ohne Netzwerk)
 
 ### 2.2 Bibliothek (Zimi)
-- [ ] `ZIM_DIR` → `<data_path>/zim`, `ZIMI_DATA_DIR` → persistenter Pfad
-- [ ] Sicherheits-Defaults: BitTorrent aus (`ZIMI_BT=off`, kein UPnP), Nearby aus,
+- [x] `ZIM_DIR` → `<data_path>/zim`, `ZIMI_DATA_DIR` → persistenter Pfad
+      --> `<data_path>/zim` als `ZIMI_EXTRA_ZIM_DIRS` (s. Rescan), `ZIM_DIR` ist ein
+      leerer Ordner im Container, `ZIMI_DATA_DIR=/data/zimi`
+- [x] Sicherheits-Defaults: BitTorrent aus (`ZIMI_BT=off`, kein UPnP), Nearby aus,
       `ZIMI_MANAGE_PASSWORD` und `ZIMI_API_TOKEN` aus Add-on-Optionen
-      (Teilweise in 2.1: `ZIMI_OFFLINE=1`, `ZIMI_BT=off`, `ZIMI_NEARBY=off`,
-      `ZIMI_MANAGE=0`, `ZIMI_AUTO_UPDATE=0` gesetzt; Token/Passwort fehlen noch)
-- [ ] Zimis eigene Bibliotheksverwaltung deaktivieren bzw. absichern
+      --> `ZIMI_OFFLINE=1`, `ZIMI_BT=off`, `ZIMI_NEARBY=off`. Zimis eigene Liste der
+      ausgehenden Verbindungen (`zimi.outbound.inventory()`) zeigt damit alles auf „off“.
+      **Abweichung:** Passwort und API-Token entfallen als Optionen. Beide schützen in Zimi
+      nur `/manage/*`, und das ist mit `ZIMI_MANAGE=0` ganz abgeschaltet (404). Lesen
+      bleibt offen (`ZIMI_PUBLIC_ACCESS=open`); Zugriffsschutz über HA-Ingress (2.5) und
+      den Token der MCP-Bridge (2.6).
+- [x] Zimis eigene Bibliotheksverwaltung deaktivieren bzw. absichern
       (`ZIMI_MANAGE=0` prüfen), Auto-Update von Zimi aus – das übernimmt der Downloader
-- [ ] Zimi nach neuen/entfernten ZIM-Dateien neu einlesen lassen (Mechanismus klären:
+      --> `ZIMI_MANAGE=0`: alle `/manage/*`-Pfade liefern 404; `ZIMI_AUTO_UPDATE=0`
+- [x] Zimi nach neuen/entfernten ZIM-Dateien neu einlesen lassen (Mechanismus klären:
       Rescan-API, Signal oder Neustart des Zimi-Prozesses)
+      --> Kein Signal; `/manage/refresh` gibt es nur mit `ZIMI_MANAGE=1`. Stattdessen:
+      Zimi beobachtet Ordner aus `ZIMI_EXTRA_ZIM_DIRS` alle 30 s (`zimi/libfolders.py`),
+      schreibt dort nie, übernimmt eine neue Datei erst bei stabiler Größe und tauscht
+      eine neue Ausgabe gegen die alte ohne Lücke. Lokal getestet: Hinzufügen, Ersetzen
+      (neue Datei rein, alte löschen) und Löschen werden nach 30–60 s übernommen.
+      **Lücke:** Was zwischen Start und erstem Watcher-Durchlauf (~30 s) dazukommt, wird
+      erst beim nächsten Start erkannt → Regel für den Downloader (2.2a).
 
 ### 2.2a Downloader (eigen, engine-unabhängig)
 - [ ] Kiwix-Katalog (OPDS) lesen; ZIM-Namen ohne Datum (z. B. `wikipedia_de_all_maxi`)
@@ -149,6 +163,11 @@ Legende: `[ ]` offen · `[x]` erledigt · `[?]` Entscheidung nötig
       (Entfernen nur nach Option `prune: true`)
 - [ ] Download robust: fortsetzbar (HTTP Range), Prüfsumme (SHA-256/MD5 vom Mirror),
       erst in `.part`, dann atomar umbenennen; alte Version erst danach löschen
+      (Name muss `<datei>.zim.part` sein, also nicht auf `.zim` enden, sonst sieht Zimi
+      die halbe Datei)
+- [ ] Startlücke des Zimi-Watchers abfangen: in den ersten 60 s nach Zimi-Start nichts
+      in `<data_path>/zim` umbenennen, oder nach dem Umbenennen über `/list` prüfen und
+      Zimi bei Bedarf neu starten
 - [ ] Speicherplatz-Check vor jedem Download (Summe aller geplanten Downloads + Puffer)
 - [ ] Bandbreite/Zeitfenster als Option (nachts)
 - [ ] Status als JSON-Datei für Landing-Page und Log (geplant, läuft, fertig, Fehler)

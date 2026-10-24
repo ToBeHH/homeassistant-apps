@@ -1,4 +1,4 @@
-# Handoff – Stand 24.10.2026 (nach Phase 2.1)
+# Handoff – Stand 24.10.2026 (nach Phase 2.2)
 
 Übergabe aus der Claude-Chat-Sitzung an die Weiterarbeit in VS Code (mit Claude Code).
 Projektregeln stehen in [CLAUDE.md](CLAUDE.md), der Plan in [TODO.md](TODO.md).
@@ -25,23 +25,38 @@ Projektregeln stehen in [CLAUDE.md](CLAUDE.md), der Plan in [TODO.md](TODO.md).
 Entscheidung: **HA-Base-Image + Zimi per pip** (Details in TODO.md 2.1).
 - `pip install --no-deps zimi libzim certifi` in `/opt/zimi`; libtorrent/zeroconf fehlen
   absichtlich (in Zimi optionale Imports).
-- Dienst `rootfs/etc/services.d/zimi/run`: setzt `ZIM_DIR=<data_path>/zim` (sonst leerer
-  Ordner), `ZIMI_DATA_DIR=/data/zimi`, `ZIMI_OFFLINE=1`, `ZIMI_BT=off`, `ZIMI_NEARBY=off`,
+- Dienst `rootfs/etc/services.d/zimi/run`: `ZIMI_DATA_DIR=/data/zimi`, `ZIMI_OFFLINE=1`, `ZIMI_BT=off`, `ZIMI_NEARBY=off`,
   `ZIMI_MANAGE=0`, `ZIMI_AUTO_UPDATE=0`.
 - Watchdog auf `/health`, `backup_exclude` für Zimis Indizes/Caches.
 - Lokal getestet (Docker): Build 159 MB, `/health`, Suche in einer kleinen ZIM,
   Start mit `--network none`, RAM ca. 55–65 MiB. **Nicht** getestet: bashio und Watchdog
   unter dem Supervisor – beim ersten Test auf dem HA-Host prüfen.
 
-## Nächster Schritt: Phase 2.2 – Zimi-Konfiguration
+## Phase 2.2 – erledigt (Zimi-Konfiguration)
 
-- `ZIMI_API_TOKEN` (und ggf. `ZIMI_MANAGE_PASSWORD`) als App-Optionen
-- Rescan klären: Zimi hat interne Funktionen „register/unregister without a library
-  rescan“ (`zimi/server.py`, ca. Zeile 4100–4480) – prüfen, ob es dafür einen
-  HTTP-Endpunkt gibt (OpenAPI unter `/openapi.json`), sonst Neustart des Dienstes
-- Zimi kennt `ZIMI_TRUSTED_PROXIES` – für Ingress (2.5) relevant
-- Danach 2.2a (eigener Downloader). Katalog: `https://library.kiwix.org/catalog/v2/entries`
-  (leitet um, `curl -L`); Einträge haben `<name>` und `.meta4`-Links.
+- `<data_path>/zim` ist für Zimi ein **zusätzlicher Bibliotheksordner**
+  (`ZIMI_EXTRA_ZIM_DIRS`): alle 30 s beobachtet, nie beschrieben, Updates als Tausch
+  ohne Lücke. `ZIM_DIR` ist ein leerer Ordner im Container.
+- `ZIMI_MANAGE=0` schaltet `/manage/*` ganz ab (404). Deshalb **keine** Optionen für
+  Passwort und API-Token, beide wirken in Zimi nur dort. Lesen offen
+  (`ZIMI_PUBLIC_ACCESS=open`), Schutz über Ingress und den MCP-Token.
+- `zimi.outbound.inventory()` zeigt mit unseren Einstellungen alle ausgehenden
+  Verbindungen auf „off“.
+- Lokal getestet: Datei beim Start, Hinzufügen, Ersetzen, Löschen.
+
+## Nächster Schritt: Phase 2.2a – eigener Downloader
+
+Regeln, die aus 2.2 folgen:
+- In `<data_path>/zim` erst als `<datei>.zim.part` schreiben, dann umbenennen, dann die
+  alte Ausgabe löschen.
+- Startlücke: In den ersten ~30 s nach dem Zimi-Start erkennt Zimi neue Dateien nicht
+  (der erste Watcher-Durchlauf nimmt den Ordner als Ausgangsstand). Downloader wartet
+  60 s nach dem Zimi-Start oder prüft über `/list` und startet Zimi bei Bedarf neu.
+
+Katalog: `https://library.kiwix.org/catalog/v2/entries` (leitet um, `curl -L`); Einträge
+haben `<name>`, `length` und `.meta4`-Links (Mirror-Liste mit Prüfsummen).
+Sprache/Umfang für den Downloader klären: Python im selben venv (stdlib reicht für
+OPDS/XML/HTTP) – passt zu „Unit-Tests für Katalog-Auflösung“.
 
 ## Wissen aus der Recherche
 
@@ -57,7 +72,7 @@ Stand 24.10.2026: 1.14.1)
 - MCP: nur stdio, `python3 -m zimi.mcp_server`; Tools u. a. `search`, `read`, `get_chunks`,
   `suggest`, `list_sources`, `deep_search`. → Für D4 eine stdio→Streamable-HTTP-Bridge
   mit Bearer-Token im Container.
-- Offen: Wie liest Zimi neue/entfernte ZIM-Dateien ein (Rescan-API, Signal, Neustart)?
+- Neue/entfernte ZIM-Dateien: Watcher für `ZIMI_EXTRA_ZIM_DIRS` (siehe Phase 2.2)
 
 **Kiwix-Inhalte**
 - Varianten: `maxi` (voll), `nopic` (ohne Bilder, ca. 75 % kleiner), `mini` (nur

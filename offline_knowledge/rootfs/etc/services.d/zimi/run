@@ -5,14 +5,14 @@
 # ==============================================================================
 
 declare data_path
-declare zim_dir="/var/lib/zimi/empty"
+declare zim_dir=""
 
 data_path=$(bashio::config 'data_path')
 
 bashio::log.info "Offline Knowledge $(bashio::addon.version) starting"
 bashio::log.info "Profile: $(bashio::config 'profile'), languages: $(bashio::config 'languages' | tr '\n' ' ')"
 
-# No storage, no content (D6): Zimi still starts, but on an empty folder.
+# No storage, no content (D6): Zimi still starts, but with an empty library.
 if bashio::var.is_empty "${data_path}"; then
     bashio::log.warning "No data_path configured. Nothing will be downloaded until a storage location is set."
 elif [[ ! -d "${data_path}" ]]; then
@@ -24,10 +24,15 @@ else
     zim_dir="${data_path}/zim"
 fi
 
-mkdir -p "${zim_dir}" /data/zimi
-
-export ZIM_DIR="${zim_dir}"
+# The downloader owns <data_path>/zim. Zimi reads it as an extra library
+# folder: watched every 30 s, never written to. Its own ZIM_DIR stays empty.
+mkdir -p /var/lib/zimi/empty /data/zimi
+export ZIM_DIR=/var/lib/zimi/empty
 export ZIMI_DATA_DIR=/data/zimi
+if bashio::var.has_value "${zim_dir}"; then
+    mkdir -p "${zim_dir}"
+    export ZIMI_EXTRA_ZIM_DIRS="${zim_dir}"
+fi
 export ZIMI_HOST=0.0.0.0
 export ZIMI_PORT=8899
 
@@ -36,8 +41,11 @@ export ZIMI_OFFLINE=1
 export ZIMI_BT=off
 export ZIMI_NEARBY=off
 export ZIMI_AUTO_UPDATE=0
+# Without /manage there is no login, so reading must stay open. Access control
+# is Home Assistant's job (ingress) and the MCP bridge's token.
 export ZIMI_MANAGE=0
+export ZIMI_PUBLIC_ACCESS=open
 
-bashio::log.info "Starting Zimi on port ${ZIMI_PORT}, library: ${ZIM_DIR}"
+bashio::log.info "Starting Zimi on port ${ZIMI_PORT}, library: ${zim_dir:-none}"
 cd "${ZIMI_DATA_DIR}" || bashio::exit.nok "Cannot enter ${ZIMI_DATA_DIR}"
 exec python3 -m zimi serve --port "${ZIMI_PORT}"
