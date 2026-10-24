@@ -2,8 +2,32 @@
 ARG BUILD_FROM=ghcr.io/home-assistant/base:3.23
 FROM ${BUILD_FROM}
 
-# Phase 1: scaffold only. Zimi, CyberChef, map viewer, downloader and MCP
-# bridge are added in phase 2 (see TODO.md).
+# Zimi is installed from PyPI into a venv on the HA base image (bashio and
+# s6-overlay included) instead of extending the upstream Zimi image, which
+# carries Chromium, Node, ffmpeg and TTS engines (about 1 GB) we don't use.
+#
+# --no-deps on purpose: libtorrent and zeroconf are optional imports in Zimi.
+# Leaving them out makes BitTorrent, UPnP and Nearby impossible, not just off.
+
+# renovate: datasource=pypi depName=zimi
+ARG ZIMI_VERSION=1.14.1
+# renovate: datasource=pypi depName=libzim
+ARG LIBZIM_VERSION=3.13.1
+# renovate: datasource=pypi depName=certifi
+ARG CERTIFI_VERSION=2026.10.23
+
+ENV PATH="/opt/zimi/bin:${PATH}"
+
+RUN apk add --no-cache \
+        libstdc++ \
+        python3 \
+    && python3 -m venv /opt/zimi \
+    && pip install --no-cache-dir --no-deps \
+        "zimi==${ZIMI_VERSION}" \
+        "libzim==${LIBZIM_VERSION}" \
+        "certifi==${CERTIFI_VERSION}" \
+    && python3 -c "import libzim, zimi.server" \
+    && find /opt/zimi -name '__pycache__' -prune -exec rm -rf {} +
 
 COPY rootfs /
 RUN chmod a+x /etc/services.d/*/run /etc/services.d/*/finish

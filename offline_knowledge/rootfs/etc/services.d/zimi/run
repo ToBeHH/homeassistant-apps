@@ -1,15 +1,18 @@
 #!/usr/bin/with-contenv bashio
 # shellcheck shell=bash
 # ==============================================================================
-# Offline Knowledge – main service (phase 1 placeholder)
+# Offline Knowledge – Zimi library server
 # ==============================================================================
 
 declare data_path
+declare zim_dir="/var/lib/zimi/empty"
+
 data_path=$(bashio::config 'data_path')
 
 bashio::log.info "Offline Knowledge $(bashio::addon.version) starting"
 bashio::log.info "Profile: $(bashio::config 'profile'), languages: $(bashio::config 'languages' | tr '\n' ' ')"
 
+# No storage, no content (D6): Zimi still starts, but on an empty folder.
 if bashio::var.is_empty "${data_path}"; then
     bashio::log.warning "No data_path configured. Nothing will be downloaded until a storage location is set."
 elif [[ ! -d "${data_path}" ]]; then
@@ -18,9 +21,23 @@ elif [[ ! -w "${data_path}" ]]; then
     bashio::log.warning "data_path '${data_path}' is not writable. Nothing will be downloaded."
 else
     bashio::log.info "Storage location: ${data_path}"
+    zim_dir="${data_path}/zim"
 fi
 
-bashio::log.info "This is a scaffold build; services are not implemented yet."
+mkdir -p "${zim_dir}" /data/zimi
 
-# Keep the service running so the app shows as started.
-exec sleep 2147483647
+export ZIM_DIR="${zim_dir}"
+export ZIMI_DATA_DIR=/data/zimi
+export ZIMI_HOST=0.0.0.0
+export ZIMI_PORT=8899
+
+# Nothing in Zimi talks to the internet; downloads are our own job (D3).
+export ZIMI_OFFLINE=1
+export ZIMI_BT=off
+export ZIMI_NEARBY=off
+export ZIMI_AUTO_UPDATE=0
+export ZIMI_MANAGE=0
+
+bashio::log.info "Starting Zimi on port ${ZIMI_PORT}, library: ${ZIM_DIR}"
+cd "${ZIMI_DATA_DIR}" || bashio::exit.nok "Cannot enter ${ZIMI_DATA_DIR}"
+exec python3 -m zimi serve --port "${ZIMI_PORT}"

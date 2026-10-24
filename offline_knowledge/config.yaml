@@ -1,6 +1,6 @@
 # https://developers.home-assistant.io/docs/apps/configuration
 name: Offline Knowledge
-version: "0.0.1"
+version: "0.1.0"
 slug: offline_knowledge
 description: >-
   Wikipedia and other reference works, offline maps and data tools,
@@ -11,6 +11,17 @@ arch:
   - amd64
 init: false
 startup: services
+watchdog: "http://[HOST]:[PORT:8899]/health"
+backup_exclude:
+  # Zimi's indexes and caches can be rebuilt; settings stay in the backup.
+  - "zimi/titles"
+  - "zimi/thumbs"
+  - "zimi/qids"
+  - "zimi/staging"
+  - "zimi/tools"
+  - "zimi/*cache*.json"
+  - "zimi/dym_vocab.json"
+  - "zimi/catalog_*.json"
 map:
   - share:rw
   - media:rw

@@ -1,6 +1,7 @@
 # Offline Knowledge
 
-> **Work in progress.** This version is a scaffold and does not serve any content yet.
+> **Work in progress.** The library server runs, but there is no downloader, web access
+> or MCP endpoint yet. ZIM files you put into `<data_path>/zim` yourself are picked up.
 
 Offline Knowledge keeps a copy of the world's knowledge on your Home Assistant host so it
 stays available without an internet connection:
@@ -16,7 +17,13 @@ stays available without an internet connection:
 Content is large. Choose a folder with enough free space and set it as **Storage location**
 (`data_path`) **before** anything is downloaded. Good choices are a folder under `/share`
 or a folder on an external drive mounted under `/media`. Content is excluded from
-Home Assistant backups.
+Home Assistant backups of this app.
+
+Note: `/share` and `/media` are separate folders in a full Home Assistant backup. If your
+storage location is there, leave that folder out of your backups, or the backup will
+contain all downloaded content.
+
+ZIM files live in `<data_path>/zim`.
 
 | Profile | Approximate size |
 | --- | --- |

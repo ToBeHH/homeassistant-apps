@@ -88,7 +88,7 @@ Legende: `[ ]` offen · `[x]` erledigt · `[?]` Entscheidung nötig
       s6-Dienst als Platzhalter mit Speicherort-Prüfung.
       `build.yaml` entfällt: HA hat es abgekündigt, das Basis-Image steht jetzt als
       `BUILD_FROM`-Default im `Dockerfile`.
-- [ ] GitHub-Repo anlegen (öffentlich) und pushen
+- [x] GitHub-Repo anlegen (öffentlich) und pushen
 - [x] CI: Lint (`frenck/action-addon-linter`, hadolint, yamllint, shellcheck)
 - [x] CI: Build & Push der Images nach GHCR mit den neuen
       `home-assistant/builder/actions/*` (D7); Images `ghcr.io/tobehh/ha-app-<name>`
@@ -102,20 +102,37 @@ Legende: `[ ]` offen · `[x]` erledigt · `[?]` Entscheidung nötig
 ## 2. Add-on „Offline Knowledge“
 
 ### 2.1 Basis
-- [ ] Basis-Image festlegen: Zimi-Image (gepinnt) erweitern vs. HA-Base-Image + Zimi
+- [x] Basis-Image festlegen: Zimi-Image (gepinnt) erweitern vs. HA-Base-Image + Zimi
       per pip. Prüfen: libzim/libtorrent-Abhängigkeiten, Größe, bashio verfügbar.
-- [ ] Prozessverwaltung für mehrere Dienste (Zimi, nginx, MCP-Bridge, Update-Jobs),
+      --> Entschieden: HA-Base-Image 3.23 (Alpine, Python 3.12) + Zimi per pip in
+      `/opt/zimi` mit `--no-deps`. libzim hat musllinux-Wheels; libtorrent und zeroconf
+      sind in Zimi optionale Imports und werden gar nicht installiert (kein BitTorrent,
+      kein UPnP, kein Nearby möglich). Image 159 MB statt ca. 1 GB (Zimi-Image bringt
+      Chromium, Node, ffmpeg, TTS mit). RAM im Leerlauf ca. 55–65 MiB.
+- [x] Prozessverwaltung für mehrere Dienste (Zimi, nginx, MCP-Bridge, Update-Jobs),
       z. B. s6-overlay
-- [ ] Optionen aus `/data/options.json` lesen, Schema in `config.yaml`
-- [ ] Kein Download, solange `data_path` nicht ausdrücklich gesetzt ist und der Pfad
+      --> s6-overlay aus dem HA-Base-Image, je Dienst ein Ordner unter
+      `rootfs/etc/services.d/` (erster Dienst: `zimi`)
+- [x] Optionen aus `/data/options.json` lesen, Schema in `config.yaml`
+      --> per `bashio::config`; Schema stand seit Phase 1
+- [x] Kein Download, solange `data_path` nicht ausdrücklich gesetzt ist und der Pfad
       existiert/beschreibbar ist (D6); stattdessen Hinweis in Log und Landing-Page
-- [ ] `backup_exclude` für Inhalte und Indizes; Konfiguration bleibt im Backup
-- [ ] Watchdog/Healthcheck (Zimi `/health`)
+      --> Log erledigt; Zimi startet dann mit leerem Ordner. Landing-Page folgt in 2.5.
+- [x] `backup_exclude` für Inhalte und Indizes; Konfiguration bleibt im Backup
+      --> Zimi-Daten unter `/data/zimi`, Indizes/Caches ausgeschlossen. Inhalte liegen
+      in `data_path` (unter `/share` bzw. `/media`) und damit gar nicht im App-Backup;
+      im vollen HA-Backup muss man den Ordner selbst abwählen (in DOCS.md vermerkt).
+- [x] Watchdog/Healthcheck (Zimi `/health`)
+      --> `watchdog: http://[HOST]:[PORT:8899]/health` in `config.yaml`
+- [ ] Auf echtem HA-Host testen (bashio/Supervisor-API und Watchdog lassen sich lokal
+      nicht prüfen; lokal getestet: Build, `/health`, Suche, Start ohne Netzwerk)
 
 ### 2.2 Bibliothek (Zimi)
 - [ ] `ZIM_DIR` → `<data_path>/zim`, `ZIMI_DATA_DIR` → persistenter Pfad
 - [ ] Sicherheits-Defaults: BitTorrent aus (`ZIMI_BT=off`, kein UPnP), Nearby aus,
       `ZIMI_MANAGE_PASSWORD` und `ZIMI_API_TOKEN` aus Add-on-Optionen
+      (Teilweise in 2.1: `ZIMI_OFFLINE=1`, `ZIMI_BT=off`, `ZIMI_NEARBY=off`,
+      `ZIMI_MANAGE=0`, `ZIMI_AUTO_UPDATE=0` gesetzt; Token/Passwort fehlen noch)
 - [ ] Zimis eigene Bibliotheksverwaltung deaktivieren bzw. absichern
       (`ZIMI_MANAGE=0` prüfen), Auto-Update von Zimi aus – das übernimmt der Downloader
 - [ ] Zimi nach neuen/entfernten ZIM-Dateien neu einlesen lassen (Mechanismus klären:

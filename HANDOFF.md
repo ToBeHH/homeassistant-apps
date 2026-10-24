@@ -1,4 +1,4 @@
-# Handoff – Stand 24.10.2026
+# Handoff – Stand 24.10.2026 (nach Phase 2.1)
 
 Übergabe aus der Claude-Chat-Sitzung an die Weiterarbeit in VS Code (mit Claude Code).
 Projektregeln stehen in [CLAUDE.md](CLAUDE.md), der Plan in [TODO.md](TODO.md).
@@ -8,37 +8,45 @@ Projektregeln stehen in [CLAUDE.md](CLAUDE.md), der Plan in [TODO.md](TODO.md).
 - **Phase 0 (Entscheidungen D1–D9):** komplett entschieden, siehe TODO.md.
 - **Phase 1 (Repo-Grundgerüst):** fertig.
   - `4328a7c` Initiales Gerüst (beide Apps, CI, Renovate) – gepusht
-  - `797f1b8` Repo-Name `homeassistant-apps`, Build-Bedingung, Lint-Fixes – **noch nicht gepusht**
-  - Handoff-Commit (CLAUDE.md, HANDOFF.md) – **noch nicht gepusht**
+  - `797f1b8` Repo-Name `homeassistant-apps`, Build-Bedingung, Lint-Fixes – gepusht
+  - `04ce004` Handoff-Commit (CLAUDE.md, HANDOFF.md) – gepusht; Lint und Builder grün
 - Lokaler Ordner heißt jetzt `~/Dev/ToBeHH/homeassistant-apps` (vorher
   `homeassistant-addons-public`).
 
 ## Sofort erledigen
 
-1. `git push`
-2. CI prüfen: **Lint** muss grün sein, **Builder** muss diesmal wirklich bauen und pushen.
-   Der erste Builder-Lauf war grün, hat aber nichts gebaut (Bedingung prüfte auf einen
-   falschen Repo-Namen; mit `797f1b8` behoben). ShellCheck-Ergebnis des ersten Laufs ist
-   unbekannt.
+1. ~~`git push`~~ erledigt
+2. ~~CI prüfen~~ erledigt: Lauf zu `04ce004` – Lint grün, Builder grün und hat gebaut.
 3. GitHub → Packages: `ha-app-offline-knowledge` und `ha-app-kolibri` auf **public** stellen.
 4. Optional: Renovate-App für das Repo aktivieren.
 
-## Nächster Schritt: Phase 2.1 – Basis-Image für „Offline Knowledge“
+## Phase 2.1 – erledigt (Offline Knowledge 0.1.0)
 
-Zu entscheiden: Zimi-Image (`epheterson/zimi`, gepinnt) erweitern **oder** HA-Base-Image
-(`ghcr.io/home-assistant/base:3.23`, Alpine) + Zimi per pip.
+Entscheidung: **HA-Base-Image + Zimi per pip** (Details in TODO.md 2.1).
+- `pip install --no-deps zimi libzim certifi` in `/opt/zimi`; libtorrent/zeroconf fehlen
+  absichtlich (in Zimi optionale Imports).
+- Dienst `rootfs/etc/services.d/zimi/run`: setzt `ZIM_DIR=<data_path>/zim` (sonst leerer
+  Ordner), `ZIMI_DATA_DIR=/data/zimi`, `ZIMI_OFFLINE=1`, `ZIMI_BT=off`, `ZIMI_NEARBY=off`,
+  `ZIMI_MANAGE=0`, `ZIMI_AUTO_UPDATE=0`.
+- Watchdog auf `/health`, `backup_exclude` für Zimis Indizes/Caches.
+- Lokal getestet (Docker): Build 159 MB, `/health`, Suche in einer kleinen ZIM,
+  Start mit `--network none`, RAM ca. 55–65 MiB. **Nicht** getestet: bashio und Watchdog
+  unter dem Supervisor – beim ersten Test auf dem HA-Host prüfen.
 
-Prüfen:
-- Läuft Zimi auf Alpine/musl? (libzim- und libtorrent-Wheels; BitTorrent brauchen wir nicht)
-- bashio und s6-overlay sind im HA-Base-Image enthalten, im Zimi-Image nicht
-- Image-Größe, RAM im Leerlauf (Zielhost hat nur wenige GB RAM frei)
+## Nächster Schritt: Phase 2.2 – Zimi-Konfiguration
 
-Danach 2.2 (Zimi-Konfiguration) und 2.2a (eigener Downloader).
+- `ZIMI_API_TOKEN` (und ggf. `ZIMI_MANAGE_PASSWORD`) als App-Optionen
+- Rescan klären: Zimi hat interne Funktionen „register/unregister without a library
+  rescan“ (`zimi/server.py`, ca. Zeile 4100–4480) – prüfen, ob es dafür einen
+  HTTP-Endpunkt gibt (OpenAPI unter `/openapi.json`), sonst Neustart des Dienstes
+- Zimi kennt `ZIMI_TRUSTED_PROXIES` – für Ingress (2.5) relevant
+- Danach 2.2a (eigener Downloader). Katalog: `https://library.kiwix.org/catalog/v2/entries`
+  (leitet um, `curl -L`); Einträge haben `<name>` und `.meta4`-Links.
 
 ## Wissen aus der Recherche
 
 **Zimi** (https://github.com/epheterson/Zimi, MIT, Ein-Personen-Projekt, häufige Releases;
-Stand Okt. 2026: 1.13.3)
+Stand 24.10.2026: 1.14.1)
 - Docker: `epheterson/zimi`, Port 8899, `/zims` (ZIM-Dateien), `/config` (Cache, Indizes,
   Einstellungen)
 - Wichtige Env-Variablen: `ZIM_DIR`, `ZIMI_DATA_DIR`, `ZIMI_BT` (Standard **an** →
