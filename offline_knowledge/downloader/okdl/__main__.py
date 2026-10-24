@@ -7,7 +7,7 @@ import os
 import sys
 import time
 
-from . import catalog, sync
+from . import catalog, maps, sync
 from .status import Status
 
 CHECK_EVERY = 24 * 3600
@@ -19,6 +19,7 @@ def main(argv=None):
     ap.add_argument("--options", default="/data/options.json")
     ap.add_argument("--state-dir", default="/data/downloader")
     ap.add_argument("--catalog-url", default=catalog.CATALOG_URL)
+    ap.add_argument("--builds-url", default=maps.BUILDS_URL)
     ap.add_argument("--once", action="store_true", help="one run, then exit")
     args = ap.parse_args(argv)
 
@@ -31,12 +32,16 @@ def main(argv=None):
     log = logging.getLogger("okdl")
     os.makedirs(args.state_dir, exist_ok=True)
     status = Status(os.path.join(args.state_dir, "status.json"))
-    cache = os.path.join(args.state_dir, "catalog.xml")
+    sources = sync.Sources(
+        os.path.join(args.state_dir, "catalog.xml"),
+        catalog_url=args.catalog_url,
+        builds_url=args.builds_url,
+    )
 
     while True:
         try:
             opts = sync.Options.load(args.options)
-            ok = sync.run(opts, status, cache, catalog_url=args.catalog_url)
+            ok = sync.run(opts, status, sources)
         except Exception as err:  # keep the service alive, report, retry
             log.exception("Sync failed: %s", err)
             status.set(state="error", message=str(err))

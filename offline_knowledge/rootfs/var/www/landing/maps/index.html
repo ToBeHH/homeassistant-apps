@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Maps – Offline Knowledge</title>
+  <link rel="stylesheet" href="lib/maplibre-gl.css">
+  <link rel="stylesheet" href="viewer.css">
+  <script src="lib/pmtiles.js"></script>
+  <script src="lib/basemaps.js"></script>
+</head>
+<body>
+  <div id="map"></div>
+  <nav class="bar">
+    <a href="../" title="Start page">←</a>
+    <select id="region" aria-label="Region" hidden></select>
+  </nav>
+  <div id="empty" class="empty" hidden>
+    <h1>No maps yet</h1>
+    <p>Add regions under <b>map_regions</b> in the app configuration, e.g. <code>world</code> or
+      <code>germany</code>. The start page shows the download progress.</p>
+    <p><a href="../">Back to the start page</a></p>
+  </div>
+  <script type="module" src="viewer.js"></script>
+</body>
+</html>

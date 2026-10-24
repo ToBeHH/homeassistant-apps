@@ -1,4 +1,4 @@
-# Handoff – Stand 24.10.2026 (nach Phase 2.5)
+# Handoff – Stand 24.10.2026 (nach Phase 2.4)
 
 Übergabe aus der Claude-Chat-Sitzung an die Weiterarbeit in VS Code (mit Claude Code).
 Projektregeln stehen in [CLAUDE.md](CLAUDE.md), der Plan in [TODO.md](TODO.md).
@@ -68,18 +68,32 @@ Entscheidung: **HA-Base-Image + Zimi per pip** (Details in TODO.md 2.1).
 - Lokal bestätigt: Ohne die 60 s Wartezeit im `downloader`-Dienst fällt eine Datei in
   Zimis Startlücke – die Wartezeit ist also nötig.
 
-## Nächster Schritt: Test auf dem HA-Host
+## Phase 2.3 + 2.4 – erledigt (CyberChef, Karten, Offline Knowledge 0.4.0)
 
-Test über das GHCR-Image:
-1. Repo in HA hinzufügen, App installieren.
-2. `data_path` auf einen existierenden Ordner (z. B. auf der externen Platte unter
-   `/media/…`), Profil `custom`, `zim_sources: [devdocs_en_bash]`, unter Netzwerk einen
-   Port für 8899 setzen.
-3. Prüfen: Startseite in der Seitenleiste, Log beider Dienste, Healthcheck, Link
-   „Open library“, dann Profil `slim` mit Zeitfenster/Limit.
+- Dockerfile mit Build-Stufe `assets`: CyberChef, go-pmtiles, MapLibre, pmtiles.js,
+  basemaps, Schriften/Sprites – alles mit SHA-256 geprüft. Image jetzt ca. 306 MB.
+- Downloader: `okdl/maps.py` + `okdl/regions.json`; ZIM- und Kartenaufträge in einer
+  Warteschlange (kleinste zuerst). 58 Unit-Tests (Karten mit nachgebautem `pmtiles`).
+- CyberChef und Karten-Viewer laufen über Ingress (eigene statische Seiten, relative
+  Pfade); Kacheln liefert nginx aus `<data_path>/maps` (Symlink `/run/landing/tiles`,
+  Range-Requests).
+- Lokal getestet: echter Extrakt (Welt z3, Hamburg z12) gegen den Protomaps-Build,
+  Karte im Browser vollständig mit lokalen Schriften/Sprites, CyberChef rechnet.
+- **Nicht** lokal testbar: Range-Requests durch den HA-Ingress-Proxy. Falls die Karte
+  in der Seitenleiste leer bleibt, ist das die erste Stelle zum Nachsehen.
+- Entscheidung: kein Zimi-Login, Bibliothek nur im lokalen Netz.
 
-Offen danach: CyberChef (2.3), Karten (2.4), MCP (2.6), `addon_stdin` für manuelles
-Update (4).
+## Nächster Schritt: Test auf dem HA-Host, dann 2.6 (MCP)
+
+1. Repo in HA hinzufügen, App installieren (Image 0.4.0).
+2. `data_path` auf einen existierenden Ordner (z. B. externe Platte unter `/media/…`),
+   Profil `custom`, `zim_sources: [devdocs_en_bash]`, `map_regions: [world]`, unter
+   Netzwerk einen Port für 8899 setzen.
+3. Prüfen: Startseite in der Seitenleiste, „Open maps“ (Karte über Ingress!),
+   „Open CyberChef“, „Open library“, Log der drei Dienste, Healthcheck.
+4. Danach eigener Betrieb: Profil `full`, `de` + `en`, Karten z. B. `dach` oder `europe`.
+
+Offen danach: MCP (2.6), `addon_stdin` für manuelles Update (4), Ressourcen messen (2.7).
 
 ## Wissen aus der Recherche
 

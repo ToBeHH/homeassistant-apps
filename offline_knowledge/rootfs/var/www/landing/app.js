@@ -122,18 +122,29 @@ function renderStatus(st) {
       status.append(` ${pct.toFixed(0)} %`, b);
     }
     if (it.message) status.append(el("div", { class: "msg" }, it.message));
+    const name = it.kind === "map" ? `Map: ${it.title || key.slice(4)}` : (it.title || key);
     return el("tr", {},
-      el("td", {}, key, it.file ? el("div", { class: "file" }, it.file) : null),
+      el("td", {}, name, el("div", { class: "file" }, it.file || key)),
       el("td", { class: "size" }, it.size ? bytes(it.size) : "–"),
       status);
   });
   $("#items tbody").replaceChildren(...rows);
 }
 
+function renderMaps(index) {
+  const regions = Object.values((index && index.regions) || {});
+  const size = regions.reduce((s, r) => s + (r.size || 0), 0);
+  $("#maps-summary").textContent = regions.length
+    ? `${regions.length} region${regions.length === 1 ? "" : "s"}, ${bytes(size)}`
+    : "No maps yet.";
+}
+
 async function refresh() {
-  const [info, status, list] = await Promise.allSettled([
+  const [info, status, list, maps] = await Promise.allSettled([
     getJSON("info.json"), getJSON("status.json"), getJSON("library/list"),
+    getJSON("maps/tiles/index.json"),
   ]);
+  renderMaps(maps.status === "fulfilled" ? maps.value : null);
   if (info.status === "fulfilled") $("#version").textContent = `Version ${info.value.version}`;
   renderLibrary(info.value, list.status === "fulfilled" ? list.value : null);
   if (status.status === "fulfilled") {

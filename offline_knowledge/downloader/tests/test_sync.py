@@ -56,8 +56,10 @@ class SyncTest(unittest.TestCase):
         s.files["/devdocs_en_bash_2026-10.zim"] = BODY
 
     def run_sync(self, s, **kw):
-        cache = os.path.join(self.state, "catalog.xml")
-        return sync.run(self.opts(**kw), self.status, cache, catalog_url=s.url + "/catalog")
+        sources = sync.Sources(
+            os.path.join(self.state, "catalog.xml"), catalog_url=s.url + "/catalog"
+        )
+        return sync.run(self.opts(**kw), self.status, sources)
 
     def test_no_storage_no_requests(self):
         for data_path in ("", self.data, "relative/path"):

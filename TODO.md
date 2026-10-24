@@ -41,6 +41,11 @@ Legende: `[ ]` offen · `[x]` erledigt · `[?]` Entscheidung nötig
   Klären, wie HAOS die USB-Platte einbindet; Alternative: NAS-Freigabe als
   HA-Netzwerkspeicher.
   --> Ja, Speicherort muss Konfigurierbar sein. Und zwar bevor der Download beginnt.
+  --> Update 24.10.: Seit Supervisor 2026.10.1 bindet HA lokale Platten (auch USB)
+      offiziell ein: *Einstellungen → System → Speicher → Speicher hinzufügen →
+      Lokale Festplatte*, Nutzung „Share“ → erscheint als `/share/<name>`.
+      Platte muss vorher formatiert sein (ext4 empfohlen), HA formatiert nicht.
+      Keine udev-Regel und kein NAS-Umweg nötig.
 - [x] **D7 Build.** Images per GitHub Actions bauen und auf GHCR veröffentlichen
   (`image:` in `config.yaml`) statt lokal auf dem HA-Host bauen zu lassen.
   *Vorschlag:* GHCR – schnellere Updates, kein Build-Aufwand auf dem Host,
@@ -202,16 +207,37 @@ stündlich).
 - [ ] Manuelles Auslösen per `hassio.addon_stdin` (siehe Abschnitt 4)
 
 ### 2.3 CyberChef
-- [ ] Release-ZIP beim Image-Build laden (Version gepinnt, Prüfsumme)
-- [ ] Statisch über nginx unter `/cyberchef/` ausliefern
+- [x] Release-ZIP beim Image-Build laden (Version gepinnt, Prüfsumme)
+      --> 11.5.0, eigene Build-Stufe `assets` im Dockerfile; SHA-256 aus den
+      GitHub-Release-Daten. Der Dateiname enthält einen Commit-Hash, deshalb bei
+      Renovate-Updates Dateiname **und** Prüfsumme von Hand nachziehen (Build schlägt
+      sonst fehl – gewollt).
+- [x] Statisch über nginx unter `/cyberchef/` ausliefern
+      --> über Ingress (relative Pfade gehen); `.br` entfernt, `.gz` per `gzip_static`
 
 ### 2.4 Karten (Protomaps)
-- [ ] Viewer: MapLibre GL JS + pmtiles.js + Protomaps-Basemap-Stil,
+- [x] Viewer: MapLibre GL JS + pmtiles.js + Protomaps-Basemap-Stil,
       **Fonts und Sprites lokal** mitliefern (sonst nicht offline)
-- [ ] Option `map_regions` (vordefinierte Regionen und/oder Bounding-Box)
-- [ ] Extrakt mit `pmtiles extract` aus dem aktuellen Protomaps-Build erzeugen,
+      --> `rootfs/var/www/landing/maps/` (über Ingress). MapLibre 6.13 (nur noch ES-Module,
+      Worker liegt daneben), pmtiles.js 4.5, basemaps 5.7.2, Noto Sans Regular/Medium/
+      Italic + Sprites v4 aus `protomaps/basemaps-assets` (Commit gepinnt). Hell/Dunkel
+      nach System, Beschriftung nach Browsersprache. Achtung: Glyph-URL nicht mit
+      `new URL()` bauen, das kodiert `{fontstack}`/`{range}`.
+- [x] Option `map_regions` (vordefinierte Regionen und/oder Bounding-Box)
+      --> `world`, `germany`, `dach`, `europe` (`okdl/regions.json`), Zoom-Override
+      `germany:12`, eigener Ausschnitt `name=min_lon,min_lat,max_lon,max_lat[:zoom]`.
+      Vorgabe `[world]` (45 MB).
+- [x] Extrakt mit `pmtiles extract` aus dem aktuellen Protomaps-Build erzeugen,
       Ablage unter `<data_path>/maps/`
-- [ ] Mehrere Regionen im Viewer umschaltbar
+      --> go-pmtiles 1.31.2 (statisch, läuft unter musl). Neuester Build aus
+      `build-metadata.protomaps.dev/builds.json`; Größe vorab per `--dry-run`
+      (Platz-Check), Extrakt nach `<region>.pmtiles.part`, `pmtiles verify`, dann
+      umbenennen; `index.json` beschreibt die Regionen für Viewer und nächsten Lauf.
+      Größen (Build 2026-10-24): world z6 45 MB, germany z15 7,4 GB, dach z15 10 GB,
+      europe z14 25 GB, europe z15 49 GB.
+- [x] Mehrere Regionen im Viewer umschaltbar
+      --> Auswahlfeld, detaillierteste Region zuerst, letzte Wahl gemerkt
+- [ ] Viewer: Welt-Übersicht unter Detailregionen legen (jetzt immer nur eine Quelle)
 - [ ] Optional/später: Offline-Ortssuche (Geocoding)
 
 ### 2.5 Startseite und Zugriff
@@ -231,8 +257,8 @@ stündlich).
 - [ ] Optionale LAN-Ports (Zimi, MCP) in `config.yaml`, standardmäßig aus
       (Zimi 8899 erledigt in 0.2.0, MCP folgt)
 - [x] Nicht fürs Internet gedacht: in DOCS.md deutlich dokumentieren
-- [ ] Später prüfen: Zimi-Login (`ZIMI_PUBLIC_ACCESS=private` + Benutzer) für den
-      offenen Port – braucht `ZIMI_MANAGE=1`, also Abwägung gegen 2.2
+- [x] Zimi-Login für den offenen Port? --> Entschieden: nein. Die Bibliothek muss nur
+      im lokalen Netz erreichbar sein, nicht über externe Dienste.
 
 ### 2.6 MCP-Server
 - [ ] Umsetzung gemäß D4, Token-Pflicht
@@ -263,8 +289,9 @@ Drei Ebenen, getrennt behandelt:
 - [ ] **Software (Images):** neue Version im Repo → HA zeigt das Update an;
       automatische Add-on-Updates greifen. Gepinnte Versionen via Renovate (Abschnitt 1).
 - [ ] **Inhalte – Bibliothek:** eigener Downloader (2.2a), Frequenz als Option
-- [ ] **Inhalte – Karten:** Update-Job (z. B. monatlich) erzeugt neuen Extrakt,
+- [x] **Inhalte – Karten:** Update-Job (z. B. monatlich) erzeugt neuen Extrakt,
       tauscht ihn atomar aus, löscht den alten erst danach
+      --> Option `map_update_days` (Vorgabe 30), Prüfung im täglichen Downloader-Lauf
 - [ ] **Inhalte – Kolibri:** Channel-Update-Job
 - [ ] Auslösung: Abgleich der Auswahl bei jedem Add-on-Start **plus** Zeitplan im
       Container (nachts, Bandbreite). Manuelles Auslösen über `hassio.addon_stdin`

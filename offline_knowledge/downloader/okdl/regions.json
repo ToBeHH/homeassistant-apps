@@ -1,0 +1,27 @@
+{
+  "_comment": [
+    "Predefined map regions: bbox is min_lon, min_lat, max_lon, max_lat.",
+    "Sizes for the Protomaps build of 2026-10-24: world z6 45 MB, germany z15",
+    "7.4 GB, dach z15 10 GB, europe z14 25 GB (z15 would be 49 GB)."
+  ],
+  "world": {
+    "title": "World (overview)",
+    "bbox": [-180, -85, 180, 85],
+    "maxzoom": 6
+  },
+  "germany": {
+    "title": "Germany",
+    "bbox": [5.8, 47.2, 15.1, 55.1],
+    "maxzoom": 15
+  },
+  "dach": {
+    "title": "Germany, Austria, Switzerland",
+    "bbox": [5.8, 45.7, 17.2, 55.1],
+    "maxzoom": 15
+  },
+  "europe": {
+    "title": "Europe",
+    "bbox": [-25, 34, 45, 72],
+    "maxzoom": 14
+  }
+}

@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.0
+
+- Offline maps: regions are cut out of the current Protomaps planet build with
+  `pmtiles extract` and shown in a map viewer (MapLibre, Protomaps basemap style) under
+  the start page. Fonts and icons are served locally, so the maps work without internet.
+- New options `map_regions` (predefined `world`, `germany`, `dach`, `europe`, a zoom
+  override like `germany:12`, or your own bounding box) and `map_update_days`.
+- CyberChef 11.5.0, served under the start page.
+- Library and map downloads share one queue, smallest first.
+
 ## 0.3.0
 
 - Start page in the Home Assistant sidebar (ingress): download status per source with

@@ -1,4 +1,5 @@
-"""One sync run: bring <data_path>/zim in line with the options."""
+"""One sync run: bring <data_path>/zim and <data_path>/maps in line with the
+options."""
 
 import json
 import logging
@@ -6,7 +7,7 @@ import os
 import shutil
 import time
 
-from . import catalog, fetch, metalink, plan, selection
+from . import catalog, fetch, maps, metalink, plan, selection
 from .status import now
 
 log = logging.getLogger(__name__)
@@ -25,11 +26,31 @@ class Options:
         self.prune = bool(raw.get("prune", False))
         self.download_window = raw.get("download_window") or ""
         self.download_limit = int(raw.get("download_limit") or 0)
+        self.map_regions = list(raw.get("map_regions") or [])
+        self.map_update_days = int(raw.get("map_update_days") or 0)
 
     @classmethod
     def load(cls, path):
         with open(path, encoding="utf-8") as f:
             return cls(json.load(f))
+
+
+class Sources:
+    """Where catalogs and tools live; replaced in tests."""
+
+    def __init__(
+        self,
+        catalog_cache,
+        catalog_url=catalog.CATALOG_URL,
+        builds_url=maps.BUILDS_URL,
+        build_url=maps.BUILD_URL,
+        extractor=None,
+    ):
+        self.catalog_cache = catalog_cache
+        self.catalog_url = catalog_url
+        self.builds_url = builds_url
+        self.build_url = build_url
+        self.extractor = extractor or maps.Extractor()
 
 
 def storage_problem(data_path):
@@ -50,13 +71,20 @@ def storage_info(path):
     return {"path": path, "free": usage.free, "total": usage.total}
 
 
+def human(n):
+    for unit, size in (("GB", GB), ("MB", 1000**2), ("kB", 1000)):
+        if n >= size:
+            return f"{n / size:.1f} {unit}"
+    return f"{n} B"
+
+
 def reserve(total_bytes):
     return max(MIN_RESERVE, total_bytes // 50)
 
 
-def _remove(zim_dir, names, why):
+def _remove(folder, names, why):
     for name in names:
-        path = os.path.join(zim_dir, name)
+        path = os.path.join(folder, name)
         try:
             os.remove(path)
             log.info("Removed %s (%s)", name, why)
@@ -66,7 +94,44 @@ def _remove(zim_dir, names, why):
             log.warning("Could not remove %s: %s", name, err)
 
 
-def run(opts, status, catalog_cache, catalog_url=catalog.CATALOG_URL):
+def _close(err):
+    if hasattr(err, "close"):
+        err.close()  # an HTTPError holds the response open
+
+
+def _wait_for_window(window, status):
+    while not window.is_open():
+        wait = window.seconds_until_open()
+        log.info("Outside download window %s, waiting %.0f min", window.spec, wait / 60)
+        status.set(state="waiting_for_window", message=window.spec)
+        time.sleep(min(wait, 3600))
+
+
+def _has_space(folder, need, size, key, label, status):
+    free = shutil.disk_usage(folder).free
+    if free >= need + reserve(size):
+        return True
+    msg = f"needs {need / GB:.1f} GB plus reserve, {free / GB:.1f} GB free"
+    log.warning("Skipping %s: %s", label, msg)
+    status.item(key, state="no_space", message=msg)
+    return False
+
+
+def _progress(key, label, size, status):
+    logged = [-1]
+
+    def progress(done):
+        status.item(key, done=done)
+        # Log every 10 %, the status file gets every update.
+        step = min(10, int(10 * done / size)) if size else 0
+        if step > logged[0]:
+            logged[0] = step
+            log.info("%s: %d %%", label, step * 10)
+
+    return progress
+
+
+def run(opts, status, sources):
     """True when no download failed. Unknown names don't count: retrying
     won't fix a typo in the options."""
     status.reset_items()
@@ -77,9 +142,49 @@ def run(opts, status, catalog_cache, catalog_url=catalog.CATALOG_URL):
         return False
 
     window = fetch.Window(opts.download_window)
+    status.set(storage=storage_info(opts.data_path), last_check=now())
+
+    ok = True
+    jobs = []  # (size, label, callable -> bool)
+    for part in (_zim_jobs, _map_jobs):
+        part_ok, part_jobs = part(opts, status, sources, window)
+        ok = ok and part_ok
+        jobs.extend(part_jobs)
+
+    if jobs:
+        total = sum(size for size, _, _ in jobs)
+        free = shutil.disk_usage(opts.data_path).free
+        log.info("%d downloads, %s; %s free", len(jobs), human(total), human(free))
+        if free < total + reserve(total):
+            log.warning(
+                "Not enough space for all downloads (%.1f GB needed incl. reserve, "
+                "%.1f GB free); downloading what fits",
+                (total + reserve(total)) / GB,
+                free / GB,
+            )
+        # Smallest first: something useful arrives early, and a big file that
+        # does not fit does not block the rest.
+        for _, _, job in sorted(jobs, key=lambda j: (j[0], j[1])):
+            if not job():
+                ok = False
+            status.set(storage=storage_info(opts.data_path))
+    else:
+        log.info("Everything is up to date")
+
+    status.set(
+        state="idle",
+        message="up to date" if ok else "finished with problems",
+        **({"last_success": now()} if ok else {}),
+    )
+    return ok
+
+
+# --- ZIM files ----------------------------------------------------------------
+
+
+def _zim_jobs(opts, status, sources, window):
     zim_dir = os.path.join(opts.data_path, "zim")
     os.makedirs(zim_dir, exist_ok=True)
-    status.set(storage=storage_info(opts.data_path))
 
     names, problems = selection.wanted(opts.profile, opts.languages, opts.zim_sources)
     for p in problems:
@@ -90,14 +195,17 @@ def run(opts, status, catalog_cache, catalog_url=catalog.CATALOG_URL):
         ", ".join(opts.languages) or "-",
         len(names),
     )
+    if not names and not plan.local_files(zim_dir):
+        return True, []
 
-    status.set(state="checking", message="reading the Kiwix catalog", last_check=now())
+    status.set(state="checking", message="reading the Kiwix catalog")
     try:
-        entries = catalog.load(catalog_cache, url=catalog_url)
+        entries = catalog.load(sources.catalog_cache, url=sources.catalog_url)
     except Exception as err:
+        _close(err)
         log.error("Kiwix catalog not available: %s", err)
-        status.set(state="error", message=f"catalog not available: {err}")
-        return False
+        status.set(message=f"Kiwix catalog not available: {err}")
+        return False, []
 
     p = plan.make(
         names,
@@ -108,9 +216,9 @@ def run(opts, status, catalog_cache, catalog_url=catalog.CATALOG_URL):
     )
     for name in p.unknown:
         log.warning("'%s' is not in the Kiwix catalog, skipped", name)
-        status.item(name, state="unknown")
+        status.item(name, kind="zim", state="unknown")
     for e in p.current:
-        status.item(e.key, state="current", file=e.filename, size=e.size)
+        status.item(e.key, kind="zim", title=e.title, state="current", file=e.filename, size=e.size)
     for name in p.keep:
         log.info("%s is no longer selected; kept (prune is off)", name)
 
@@ -118,55 +226,23 @@ def run(opts, status, catalog_cache, catalog_url=catalog.CATALOG_URL):
     _remove(zim_dir, p.stale_parts, "unfinished download no longer needed")
     _remove(zim_dir, p.prune, "no longer selected")
 
+    jobs = []
     for e in p.downloads:
-        status.item(e.key, state="queued", file=e.filename, size=e.size, done=0)
-    total = sum(e.size for e in p.downloads)
-    if not p.downloads:
-        log.info("All %d sources are up to date", len(p.current))
-        status.set(state="idle", message="up to date", last_success=now())
-        return True
-
-    free = shutil.disk_usage(zim_dir).free
-    log.info(
-        "%d downloads, %.1f GB; %.1f GB free", len(p.downloads), total / GB, free / GB
-    )
-    if free < total + reserve(total):
-        log.warning(
-            "Not enough space for all downloads (%.1f GB needed incl. reserve, "
-            "%.1f GB free); downloading what fits",
-            (total + reserve(total)) / GB,
-            free / GB,
+        status.item(e.key, kind="zim", title=e.title, state="queued", file=e.filename, size=e.size, done=0)
+        replaces = p.replaces.get(e.filename, [])
+        jobs.append(
+            (e.size, e.key, lambda e=e, r=replaces: _download_one(e, zim_dir, r, opts, window, status))
         )
-
-    ok = True
-    for e in p.downloads:
-        if not _download_one(e, zim_dir, p.replaces.get(e.filename, []), opts, window, status):
-            ok = False
-    status.set(
-        state="idle",
-        message="up to date" if ok and not p.unknown else "finished with problems",
-        **({"last_success": now()} if ok else {}),
-    )
-    return ok
+    return True, jobs
 
 
 def _download_one(e, zim_dir, replaces, opts, window, status):
     dest = os.path.join(zim_dir, e.filename)
     part = dest + plan.PART
     have = os.path.getsize(part) if os.path.exists(part) else 0
-    need = max(0, e.size - have)
-    free = shutil.disk_usage(zim_dir).free
-    if free < need + reserve(e.size):
-        msg = f"needs {need / GB:.1f} GB plus reserve, {free / GB:.1f} GB free"
-        log.warning("Skipping %s: %s", e.filename, msg)
-        status.item(e.key, state="no_space", message=msg)
+    if not _has_space(zim_dir, max(0, e.size - have), e.size, e.key, e.filename, status):
         return False
-
-    while not window.is_open():
-        wait = window.seconds_until_open()
-        log.info("Outside download window %s, waiting %.0f min", window.spec, wait / 60)
-        status.set(state="waiting_for_window", message=window.spec)
-        time.sleep(min(wait, 3600))
+    _wait_for_window(window, status)
 
     try:
         meta = metalink.load(e.meta4_url)
@@ -184,19 +260,10 @@ def _download_one(e, zim_dir, replaces, opts, window, status):
         urls.append(direct)
     size = meta.size or e.size
 
-    log.info("Downloading %s (%.2f GB)%s", e.filename, size / GB, " – resuming" if have else "")
+    log.info("Downloading %s (%s)%s", e.filename, human(size), " – resuming" if have else "")
     status.set(state="downloading", message=e.filename)
     status.item(e.key, state="downloading", size=size, done=have)
-
-    logged = [-1]
-
-    def progress(done):
-        status.item(e.key, done=done)
-        # Log every 10 %, the status file gets every update.
-        step = int(10 * done / size) if size else 0
-        if step > logged[0]:
-            logged[0] = step
-            log.info("%s: %d %%", e.filename, step * 10)
+    progress = _progress(e.key, e.filename, size, status)
 
     while True:
         try:
@@ -226,5 +293,93 @@ def _download_one(e, zim_dir, replaces, opts, window, status):
     log.info("Finished %s", e.filename)
     status.item(e.key, state="current", done=size)
     _remove(zim_dir, replaces, f"replaced by {e.filename}")
-    status.set(storage=storage_info(opts.data_path))
+    return True
+
+
+# --- Maps ---------------------------------------------------------------------
+
+
+def _map_jobs(opts, status, sources, window):
+    maps_dir = os.path.join(opts.data_path, "maps")
+    os.makedirs(maps_dir, exist_ok=True)
+    regions, problems = maps.wanted(opts.map_regions)
+    for p in problems:
+        log.warning("Option problem: %s", p)
+    index = maps.read_index(maps_dir)
+    if not regions and not index["regions"]:
+        return True, []
+
+    _remove(maps_dir, maps.part_files(maps_dir), "unfinished map extract")
+
+    status.set(state="checking", message="reading the Protomaps build list")
+    try:
+        build_key = maps.latest_build(maps.load_builds(sources.builds_url))
+    except Exception as err:
+        _close(err)
+        log.error("Protomaps build list not available: %s", err)
+        status.set(message=f"Protomaps build list not available: {err}")
+        for r in regions:
+            if r.label in index["regions"]:
+                status.item(f"map:{r.label}", kind="map", title=r.title, state="current")
+        return False, []
+
+    p = maps.make_plan(
+        regions, index, maps_dir, build_key, opts.map_update_days, opts.prune
+    )
+    for label in p.prune:
+        _remove(maps_dir, [index["regions"][label].get("file", f"{label}.pmtiles")], "no longer selected")
+        index["regions"].pop(label, None)
+    for label in p.keep:
+        log.info("Map %s is no longer selected; kept (prune is off)", label)
+        index["regions"][label]["selected"] = False
+    for r in p.current:
+        index["regions"][r.label]["selected"] = True
+        have = index["regions"][r.label]
+        status.item(
+            f"map:{r.label}", kind="map", title=r.title, state="current",
+            file=have.get("file"), size=have.get("size"),
+        )
+    maps.write_index(maps_dir, index)
+
+    url = sources.build_url.format(key=build_key)
+    jobs = []
+    for r, reason in p.extract:
+        key = f"map:{r.label}"
+        status.item(key, kind="map", title=r.title, state="queued", file=r.file, done=0)
+        log.info("Map %s: %s, estimating size", r.label, reason)
+        size = sources.extractor.dry_run(url, r)
+        if size:
+            status.item(key, size=size)
+        jobs.append(
+            (size or 0, key, lambda r=r, s=size: _extract_one(r, s, url, build_key, maps_dir, window, status, sources))
+        )
+    return True, jobs
+
+
+def _extract_one(region, size, url, build_key, maps_dir, window, status, sources):
+    key = f"map:{region.label}"
+    # The old file stays until the new one is complete, so the full size is needed.
+    if not _has_space(maps_dir, size or 0, size or 0, key, f"map {region.label}", status):
+        return False
+    _wait_for_window(window, status)
+
+    part = os.path.join(maps_dir, region.file + maps.PART)
+    log.info("Extracting map %s (%s)", region.label, human(size) if size else "size unknown")
+    status.set(state="downloading", message=f"map {region.label}")
+    status.item(key, state="downloading", done=0)
+    try:
+        sources.extractor.extract(url, region, part, progress=_progress(key, f"map {region.label}", size, status))
+    except (OSError, maps.ExtractError) as err:
+        log.error("Map %s failed: %s", region.label, err)
+        status.item(key, state="error", message=str(err))
+        _remove(maps_dir, [region.file + maps.PART], "failed extract")
+        return False
+
+    final = os.path.getsize(part)
+    os.replace(part, os.path.join(maps_dir, region.file))
+    index = maps.read_index(maps_dir)
+    index["regions"][region.label] = maps.index_entry(region, build_key, final)
+    maps.write_index(maps_dir, index)
+    log.info("Finished map %s", region.label)
+    status.item(key, state="current", size=final, done=final)
     return True

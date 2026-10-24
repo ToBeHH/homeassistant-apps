@@ -5,6 +5,7 @@
 # ==============================================================================
 
 declare library_port
+declare data_path
 
 # The host port for Zimi, if the user opened one under Network.
 library_port=$(bashio::addon.port "8899/tcp")
@@ -18,6 +19,14 @@ jq -n \
     --argjson library_port "${library_port}" \
     '{version: $version, library_port: $library_port}' \
     > /run/landing/info.json
+
+# Map tiles live in <data_path>/maps; nothing to link without storage.
+rm -f /run/landing/tiles
+data_path=$(bashio::config 'data_path')
+if bashio::var.has_value "${data_path}" && [[ -d "${data_path}" && -w "${data_path}" ]]; then
+    mkdir -p "${data_path}/maps"
+    ln -s "${data_path}/maps" /run/landing/tiles
+fi
 
 bashio::log.info "Starting landing page"
 exec nginx -g "daemon off;"

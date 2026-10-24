@@ -139,6 +139,8 @@ def download(
             errors.append(f"{url}: {err}")
             log.warning("%s", errors[-1])
         except (OSError, http.client.HTTPException, DownloadError) as err:
+            if hasattr(err, "close"):
+                err.close()  # an HTTPError holds the response open
             errors.append(f"{url}: {err}")
             log.warning("Mirror failed: %s", errors[-1])
     raise DownloadError("; ".join(errors) or "no mirror available")

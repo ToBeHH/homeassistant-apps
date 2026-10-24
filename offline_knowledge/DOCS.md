@@ -1,7 +1,7 @@
 # Offline Knowledge
 
-> **Work in progress.** Library, downloader and start page work. Maps, CyberChef and the
-> MCP endpoint are still missing.
+> **Work in progress.** Library, maps, CyberChef and the start page work. The MCP
+> endpoint is still missing.
 
 Offline Knowledge keeps a copy of the world's knowledge on your Home Assistant host so it
 stays available without an internet connection:
@@ -49,7 +49,33 @@ checksum and appear under their final name only when complete. Before each downl
 downloader checks the free space (download plus a reserve of 2 GB or 2 %, whichever is
 larger) and skips what does not fit.
 
-The current state is written to `/data/downloader/status.json` inside the app.
+The current state is shown on the start page.
+
+## Maps
+
+Maps are cut out of the [Protomaps](https://protomaps.com) planet build (OpenStreetMap
+data); only the selected area is downloaded. They are stored in `<data_path>/maps` and
+shown under **Open maps** on the start page.
+
+| `map_regions` entry | Area | Size (10/2026) |
+| --- | --- | --- |
+| `world` | whole world, zoom 0–6 (countries, big cities, main roads) | 45 MB |
+| `germany` | Germany, full detail (zoom 15) | 7.4 GB |
+| `dach` | Germany, Austria, Switzerland, full detail | 10 GB |
+| `europe` | Europe, zoom 14 | 25 GB |
+| `germany:12` | any of the above with a lower maximum zoom; each level less roughly halves the size | |
+| `home=9.7,53.4,10.3,53.7:15` | your own area: name, then min_lon,min_lat,max_lon,max_lat and optionally the zoom (default 14) | |
+
+`map_update_days` (default 30) renews a map once it is that old and a newer build exists;
+`0` keeps maps as they are. A renewed map replaces the old one only when it is complete.
+
+Maps are not paused by `download_window` once they have started, and `download_limit`
+does not apply to them.
+
+## CyberChef
+
+[CyberChef](https://github.com/gchq/CyberChef) runs completely in your browser and is
+opened from the start page. Nothing you enter leaves your device.
 
 To try the app with very little data, use the `custom` profile with
 `zim_sources: [devdocs_en_bash]` (0.5 MB).
@@ -67,13 +93,15 @@ so keep some spare space.
 | `zim_sources` | Extra ZIM names without date, e.g. `wikipedia_de_all_maxi`. For `custom`, the complete list. |
 | `prune` | Delete content that is no longer selected (default: off). Older editions of selected content are always replaced. |
 | `download_window` | Only download in this daily window, e.g. `01:00-06:00`. A running download pauses outside it and resumes later. Empty: any time. |
-| `download_limit` | Maximum download speed in KB/s, `0` for no limit. |
+| `download_limit` | Maximum download speed in KB/s, `0` for no limit. Library downloads only. |
+| `map_regions` | Map regions, see [Maps](#maps). Default: `world`. |
+| `map_update_days` | Renew maps after this many days, `0` for never. |
 
 ## Access
 
 - **Start page:** *Open Web UI* or the **Offline Knowledge** entry in the sidebar. It
-  shows the download status, the free space and a link to the library. Home Assistant
-  takes care of the login.
+  shows the download status and the free space, and opens the library, the maps and
+  CyberChef. Home Assistant takes care of the login.
 - **Library:** opens on its own port, because the library server can't run inside the
   Home Assistant sidebar. Set a host port for `8899/tcp` under **Network** in the app
   settings; the start page then links to it. The library has **no login of its own** –
@@ -96,5 +124,7 @@ This app is meant for your local network only.
 
 ## Licenses
 
-The app is MIT licensed. Bundled tools keep their own licenses. Downloaded content keeps its
-own license, e.g. Wikipedia (CC BY-SA) and OpenStreetMap (ODbL).
+The app is MIT licensed. Bundled tools keep their own licenses: Zimi (MIT), CyberChef
+(Apache 2.0), MapLibre GL JS, PMTiles and the Protomaps basemap (BSD 3-Clause), Noto Sans
+fonts (OFL). Downloaded content keeps its own license, e.g. Wikipedia (CC BY-SA) and
+OpenStreetMap (ODbL).

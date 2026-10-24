@@ -29,6 +29,15 @@ configuration:
   download_limit:
     name: Download-Geschwindigkeit
     description: Höchste Download-Geschwindigkeit in KB/s. 0 bedeutet ohne Begrenzung.
+  map_regions:
+    name: Kartenregionen
+    description: >-
+      Regionen für Offline-Karten: world (Übersicht), germany, dach, europe, optional
+      mit höchster Zoomstufe wie germany:12, oder ein eigener Ausschnitt als
+      name=min_lon,min_lat,max_lon,max_lat[:zoom].
+  map_update_days:
+    name: Karten-Aktualisierung
+    description: Karten erneuern, wenn sie so viele Tage alt sind. 0 bedeutet nie.
 network:
   8899/tcp: >-
     Weboberfläche der Bibliothek. Standardmäßig aus; nur in einem vertrauenswürdigen

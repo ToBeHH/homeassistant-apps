@@ -28,6 +28,15 @@ configuration:
   download_limit:
     name: Download speed limit
     description: Maximum download speed in KB/s. 0 means no limit.
+  map_regions:
+    name: Map regions
+    description: >-
+      Regions for offline maps: world (overview), germany, dach, europe, optionally
+      with a maximum zoom such as germany:12, or your own area as
+      name=min_lon,min_lat,max_lon,max_lat[:zoom].
+  map_update_days:
+    name: Map update interval
+    description: Renew maps when they are this many days old. 0 means never.
 network:
   8899/tcp: >-
     Library web interface. Off by default; only open it in a trusted local network.
