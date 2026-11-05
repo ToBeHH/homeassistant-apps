@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.0
+
+- The MCP token is now created by the app. The start page shows it with the address, can
+  copy it and can recreate it. The `mcp_token` option is gone.
+- The MCP server only runs when a host port is set for 8900/tcp.
+- Content updates: new option `update_interval_days` (default 7, was fixed at one day),
+  **Check now** on the start page, and the command `update` through `hassio.addon_stdin`.
+
 ## 0.5.1
 
 - Map downloads show their real progress. They showed 100 % right from the start,

@@ -22,11 +22,15 @@ RUN apk add --no-cache \
 COPY channel_sync/kbsync /opt/kbsync/kbsync
 
 COPY rootfs /
-RUN chmod a+x /etc/services.d/*/run /etc/services.d/*/finish
+RUN chmod a+x /etc/services.d/*/run /etc/services.d/*/finish \
+    /usr/local/bin/stdin-commands
 
 # Through nginx, which adds the path prefix. The first start migrates databases.
 HEALTHCHECK --interval=60s --timeout=10s --start-period=15m --retries=3 \
     CMD ["curl", "-fsS", "-o", "/dev/null", "http://127.0.0.1:8099/api/public/info/"]
+
+# With s6-overlay only the main command gets the container's stdin.
+CMD ["/usr/local/bin/stdin-commands"]
 
 LABEL \
     org.opencontainers.image.title="Home Assistant App: Kolibri" \

@@ -26,6 +26,7 @@ class Options:
         self.prune = bool(raw.get("prune", False))
         self.download_window = raw.get("download_window") or ""
         self.download_limit = int(raw.get("download_limit") or 0)
+        self.update_interval_days = max(1, int(raw.get("update_interval_days") or 7))
         self.map_regions = list(raw.get("map_regions") or [])
         self.map_update_days = int(raw.get("map_update_days") or 0)
 

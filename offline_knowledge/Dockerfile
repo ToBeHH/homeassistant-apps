@@ -108,7 +108,8 @@ COPY downloader/okdl /opt/okdl/okdl
 COPY mcp_server/okmcp /opt/okdl/okmcp
 
 COPY rootfs /
-RUN chmod a+x /etc/services.d/*/run /etc/services.d/*/finish
+RUN chmod a+x /etc/services.d/*/run /etc/services.d/*/finish \
+    /etc/cont-init.d/* /usr/local/bin/stdin-commands
 
 COPY --from=assets /out/bin/pmtiles /usr/local/bin/pmtiles
 COPY --from=assets /out/cyberchef /var/www/landing/cyberchef
@@ -117,6 +118,9 @@ COPY --from=assets /out/maps /var/www/landing/maps
 # The first start may build title indexes for every ZIM, hence the long grace.
 HEALTHCHECK --interval=60s --timeout=10s --start-period=15m --retries=3 \
     CMD ["curl", "-fsS", "-o", "/dev/null", "http://127.0.0.1:8899/health"]
+
+# With s6-overlay only the main command gets the container's stdin.
+CMD ["/usr/local/bin/stdin-commands"]
 
 LABEL \
     org.opencontainers.image.title="Home Assistant App: Offline Knowledge" \

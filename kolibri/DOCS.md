@@ -43,6 +43,9 @@ The app imports new channels at start and checks once a day for new versions. Be
 channel it checks the free space (channel size plus a reserve of 2 GB or 2 %, whichever is
 larger). Imports start right away; there is no download window. Progress is in the log.
 
+A Home Assistant script or button can start a check right away with the action
+`hassio.addon_stdin` and the input `update`.
+
 Removing an ID from `channels` does not delete the channel. Use
 **Device → Channels** in Kolibri for that.
 

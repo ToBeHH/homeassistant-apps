@@ -1,0 +1,8 @@
+#!/bin/sh
+# ==============================================================================
+# The MCP token: generated once, shown and renewed on the start page.
+# ==============================================================================
+if [ ! -s /data/mcp_token ]; then
+    umask 077
+    head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n' > /data/mcp_token
+fi

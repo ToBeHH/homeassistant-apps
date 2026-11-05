@@ -7,6 +7,7 @@ import unittest
 from unittest import mock
 
 from kbsync import sync
+from kbsync.__main__ import wait_for_trigger
 
 CH = "5d53b37cc90e50128a40e293d9fadb27"
 META = {"id": CH, "name": "Test", "version": 3, "published_size": 1000}
@@ -42,6 +43,16 @@ class Studio:
     def __exit__(self, *exc):
         self.httpd.shutdown()
         self.httpd.server_close()
+
+
+class TriggerTest(unittest.TestCase):
+    def test_trigger_wakes_once(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "trigger")
+            self.assertFalse(wait_for_trigger(path, 0))
+            open(path, "w").close()
+            self.assertTrue(wait_for_trigger(path, 60))
+            self.assertFalse(os.path.exists(path))
 
 
 class RunOnceTest(unittest.TestCase):

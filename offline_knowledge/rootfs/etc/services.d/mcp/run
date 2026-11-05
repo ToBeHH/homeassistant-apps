@@ -4,13 +4,11 @@
 # Offline Knowledge – MCP server (Streamable HTTP, bearer token required)
 # ==============================================================================
 
-# No token, no server: the port stays closed.
-if ! bashio::config.has_value 'mcp_token'; then
-    bashio::log.info "MCP server off: no mcp_token set"
-    exec sleep 2147483647
-fi
-if [[ "$(bashio::config 'mcp_token' | wc -c)" -le 16 ]]; then
-    bashio::log.warning "MCP server off: mcp_token needs at least 16 characters"
+# No port, no server: nobody could reach it, and it needs about 100 MB of RAM.
+declare mcp_port
+mcp_port=$(bashio::app.port "8900/tcp")
+if ! bashio::var.has_value "${mcp_port}" || [[ "${mcp_port}" == "null" ]]; then
+    bashio::log.info "MCP server off: no host port set for 8900/tcp"
     exec sleep 2147483647
 fi
 

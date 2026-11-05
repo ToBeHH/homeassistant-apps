@@ -139,6 +139,88 @@ function renderMaps(index) {
     : "No maps yet.";
 }
 
+// --- MCP access ---------------------------------------------------------------
+
+const CONTROL_HEADERS = { "X-Requested-By": "start-page" };
+let mcpToken = "";
+let mcpShown = false;
+let renewArmed = null;
+
+function mcpUrl(info) {
+  return info && info.mcp_port ? `http://${location.hostname}:${info.mcp_port}/mcp` : "";
+}
+
+function renderMcpToken() {
+  $("#mcp-token").textContent = mcpShown ? mcpToken : "••••••••••••••••";
+  $("#mcp-show").textContent = mcpShown ? "Hide" : "Show";
+}
+
+// navigator.clipboard is missing on plain HTTP and blocked in some iframes.
+async function copy(text, what) {
+  let done = false;
+  try {
+    await navigator.clipboard.writeText(text);
+    done = true;
+  } catch {
+    const area = el("textarea");
+    area.value = text;
+    document.body.append(area);
+    area.select();
+    try { done = document.execCommand("copy"); } catch { /* handled below */ }
+    area.remove();
+  }
+  $("#mcp-note").textContent = done ? `${what} copied.` : "Copying failed, please select it by hand.";
+  if (!done) { mcpShown = true; renderMcpToken(); }
+}
+
+async function loadMcp(info) {
+  const url = mcpUrl(info);
+  $("#mcp-off").hidden = !!url;
+  $("#mcp-url").textContent = url || "–";
+  $("#mcp-copy-cmd").disabled = !url;
+  $("#mcp-summary").textContent = url ? "Running." : "Off: no port set.";
+  try {
+    mcpToken = (await getJSON("control/mcp-token")).token;
+  } catch {
+    $("#mcp-note").textContent = "The token is not available yet, please reload in a minute.";
+  }
+  renderMcpToken();
+
+  $("#mcp-show").onclick = () => { mcpShown = !mcpShown; renderMcpToken(); };
+  $("#mcp-copy").onclick = () => copy(mcpToken, "Token");
+  $("#mcp-copy-cmd").onclick = () => copy(
+    `claude mcp add --transport http offline-knowledge ${url} --header "Authorization: Bearer ${mcpToken}"`,
+    "Command",
+  );
+  $("#mcp-renew").onclick = async () => {
+    const button = $("#mcp-renew");
+    if (!renewArmed) {
+      button.textContent = "Really? Connected assistants lose access";
+      renewArmed = setTimeout(() => { renewArmed = null; button.textContent = "Recreate token"; }, 6000);
+      return;
+    }
+    clearTimeout(renewArmed);
+    renewArmed = null;
+    button.textContent = "Recreate token";
+    const r = await fetch("control/mcp-token", { method: "POST", headers: CONTROL_HEADERS });
+    if (r.ok) {
+      mcpToken = (await r.json()).token;
+      $("#mcp-note").textContent = "New token created. Update it in your assistants.";
+      renderMcpToken();
+    } else {
+      $("#mcp-note").textContent = "Creating a new token failed.";
+    }
+  };
+}
+
+$("#update-now").onclick = async () => {
+  const button = $("#update-now");
+  button.disabled = true;
+  const r = await fetch("control/update", { method: "POST", headers: CONTROL_HEADERS }).catch(() => null);
+  button.textContent = r && r.ok ? "Requested" : "Failed";
+  setTimeout(() => { button.disabled = false; button.textContent = "Check now"; }, 8000);
+};
+
 async function refresh() {
   const [info, status, list, maps] = await Promise.allSettled([
     getJSON("info.json"), getJSON("status.json"), getJSON("library/list"),
@@ -157,3 +239,4 @@ async function refresh() {
 
 refresh();
 setInterval(refresh, 10000);
+getJSON("info.json").then(loadMcp, () => loadMcp(null));

@@ -30,7 +30,17 @@ Names ending in `.zim.part` belong to the downloader.
 ## Content
 
 The downloader looks up every selected source in the [Kiwix catalog](https://library.kiwix.org)
-and keeps the newest edition in `<data_path>/zim`. It runs at start and then once a day.
+and keeps the newest edition in `<data_path>/zim`. It runs at every start of the app, then
+every `update_interval_days` days, and when you press **Check now** on the start page. A
+Home Assistant script or button can also start it:
+
+```yaml
+action: hassio.addon_stdin
+data:
+  addon: <slug of this app>
+  input: update
+```
+
 What each profile contains is defined per language in
 [`profiles.json`](https://github.com/ToBeHH/homeassistant-apps/blob/main/offline_knowledge/downloader/okdl/profiles.json).
 
@@ -90,17 +100,15 @@ so keep some spare space.
 AI assistants can search and read the library through the
 [Model Context Protocol](https://modelcontextprotocol.io). To turn it on:
 
-1. Set `mcp_token` to a long random value, e.g. from `openssl rand -hex 32`. Without a
-   token of at least 16 characters the MCP server does not start.
-2. Set a host port for `8900/tcp` under **Network** in the app settings.
+1. Set a host port for `8900/tcp` under **Network** in the app settings.
+2. Restart the app and open the start page. Its **AI assistants (MCP)** section shows the
+   address and the token, and copies a ready-made command for Claude Code.
 
 Clients connect with Streamable HTTP to `http://<host>:<port>/mcp` and send the header
-`Authorization: Bearer <token>`. For example with Claude Code:
+`Authorization: Bearer <token>`.
 
-```bash
-claude mcp add --transport http offline-knowledge http://<host>:<port>/mcp \
-  --header "Authorization: Bearer <token>"
-```
+The app creates the token itself. **Recreate token** on the start page replaces it at once;
+connected assistants then need the new one. Without a host port the MCP server does not run.
 
 `mcp_tools` selects the tools. `lean` offers `search`, `read` and `read_section`, which
 suits small models. `full` (default) offers all of Zimi's tools, including some that
@@ -120,10 +128,10 @@ a minute after they arrive.
 | `zim_sources` | Extra ZIM names without date, e.g. `wikipedia_de_all_maxi`. For `custom`, the complete list. |
 | `prune` | Delete content that is no longer selected (default: off). Older editions of selected content are always replaced. |
 | `download_window` | Only download in this daily window, e.g. `01:00-06:00`. A running download pauses outside it and resumes later. Empty: any time. |
+| `update_interval_days` | Look for new editions of the library every this many days (default 7). |
 | `download_limit` | Maximum download speed in KB/s, `0` for no limit. Library downloads only. |
 | `map_regions` | Map regions, see [Maps](#maps). Default: `world`. |
 | `map_update_days` | Renew maps after this many days, `0` for never. |
-| `mcp_token` | Token for the MCP endpoint, at least 16 characters. Empty: MCP stays off. |
 | `mcp_tools` | `full` or `lean`, see [MCP endpoint](#mcp-endpoint). |
 
 ## Access
@@ -141,7 +149,7 @@ a minute after they arrive.
 | Port | Description |
 | --- | --- |
 | 8899/tcp | Library web interface and API. Off by default. Set a host port under **Network** to use it in your local network. |
-| 8900/tcp | MCP endpoint. Off by default, and needs `mcp_token`. |
+| 8900/tcp | MCP endpoint. Off by default; the MCP server only runs with a port. |
 
 ## Security
 

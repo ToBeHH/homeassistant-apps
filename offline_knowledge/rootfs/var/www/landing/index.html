@@ -27,6 +27,11 @@
         <p><a class="button" href="maps/">Open maps</a></p>
       </article>
       <article class="card">
+        <h2>AI assistants (MCP)</h2>
+        <p id="mcp-summary" class="muted">Checking…</p>
+        <p><a class="button" href="#mcp">Show access</a></p>
+      </article>
+      <article class="card">
         <h2>CyberChef</h2>
         <p class="muted">Encode, decode, convert and analyse data.</p>
         <p><a class="button" href="cyberchef/">Open CyberChef</a></p>
@@ -36,7 +41,10 @@
     <section class="panel">
       <div class="panel-head">
         <h2>Downloads</h2>
-        <span id="state" class="badge"></span>
+        <div class="panel-actions">
+          <span id="state" class="badge"></span>
+          <button id="update-now" type="button" class="secondary">Check now</button>
+        </div>
       </div>
       <dl class="facts">
         <dt>Storage</dt><dd id="storage">–</dd>
@@ -52,6 +60,23 @@
         <tbody></tbody>
       </table>
       <p id="items-empty" class="muted" hidden>Nothing selected.</p>
+    </section>
+
+    <section id="mcp" class="panel">
+      <h2>AI assistants (MCP)</h2>
+      <p id="mcp-off" class="muted" hidden>The MCP server is off. To turn it on, set a host port
+        for 8900/tcp under Network in the app settings and restart the app.</p>
+      <dl class="facts">
+        <dt>Address</dt><dd><code id="mcp-url">–</code></dd>
+        <dt>Token</dt><dd><code id="mcp-token">••••••••••••••••</code></dd>
+      </dl>
+      <p class="actions">
+        <button id="mcp-show" type="button" class="secondary">Show</button>
+        <button id="mcp-copy" type="button" class="secondary">Copy token</button>
+        <button id="mcp-copy-cmd" type="button" class="secondary">Copy Claude Code command</button>
+        <button id="mcp-renew" type="button" class="secondary danger">Recreate token</button>
+      </p>
+      <p id="mcp-note" class="muted" role="status"></p>
     </section>
   </main>
 

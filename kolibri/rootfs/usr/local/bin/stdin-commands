@@ -1,0 +1,21 @@
+#!/bin/sh
+# ==============================================================================
+# Runs as the container's main command because only that one gets its stdin.
+# hassio.addon_stdin with the input "update" starts a channel check.
+# ==============================================================================
+while :; do
+    if ! IFS= read -r line; then
+        # No stdin attached. Exiting here would stop the whole app.
+        exec sleep 2147483647
+    fi
+    # Home Assistant sends the input JSON encoded.
+    command=$(printf '%s' "${line}" | tr -d '" \r')
+    case "${command}" in
+        update)
+            echo "Channel check requested through stdin"
+            touch /run/kbsync.trigger
+            ;;
+        "") ;;
+        *) echo "Unknown command on stdin: ${command} (known: update)" ;;
+    esac
+done

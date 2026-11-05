@@ -28,6 +28,11 @@ configuration:
   download_limit:
     name: Download speed limit
     description: Maximum download speed in KB/s. 0 means no limit.
+  update_interval_days:
+    name: Content check interval
+    description: >-
+      Look for new editions of the library every this many days. New selections are
+      also fetched at every start of the app.
   map_regions:
     name: Map regions
     description: >-
@@ -37,11 +42,6 @@ configuration:
   map_update_days:
     name: Map update interval
     description: Renew maps when they are this many days old. 0 means never.
-  mcp_token:
-    name: MCP token
-    description: >-
-      Password for the MCP endpoint, at least 16 characters. Without a token the
-      MCP server stays off.
   mcp_tools:
     name: MCP tools
     description: >-
@@ -51,5 +51,5 @@ network:
   8899/tcp: >-
     Library web interface. Off by default; only open it in a trusted local network.
   8900/tcp: >-
-    MCP endpoint for AI assistants. Off by default; only open it in a trusted local
-    network.
+    MCP endpoint for AI assistants. The MCP server only runs with a port set here. Only
+    open it in a trusted local network. Address and token are on the start page.

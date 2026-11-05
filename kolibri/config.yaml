@@ -1,6 +1,6 @@
 # https://developers.home-assistant.io/docs/apps/configuration
 name: Kolibri
-version: "0.1.1"
+version: "0.1.2"
 slug: kolibri
 description: >-
   Kolibri offline learning platform, e.g. Khan Academy courses, available
@@ -11,6 +11,7 @@ arch:
   - amd64
 init: false
 startup: services
+stdin: true
 ingress: true
 panel_icon: mdi:school
 backup_exclude:

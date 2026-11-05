@@ -83,6 +83,25 @@ footer { font-size: 13px; margin-top: 24px; }
   font-weight: 500;
 }
 
+.panel + .panel { margin-top: 16px; }
+.panel-actions, .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.actions { margin: 0 0 8px; }
+code { overflow-wrap: anywhere; font-size: 13px; }
+
+button.secondary {
+  font: inherit;
+  font-size: 13px;
+  padding: 4px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+button.secondary:hover { border-color: var(--accent); }
+button.secondary:disabled { opacity: 0.5; cursor: default; }
+button.danger { color: var(--err); }
+
 .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 
 .badge {

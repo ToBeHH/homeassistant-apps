@@ -1,6 +1,6 @@
 # https://developers.home-assistant.io/docs/apps/configuration
 name: Offline Knowledge
-version: "0.5.1"
+version: "0.6.0"
 slug: offline_knowledge
 description: >-
   Wikipedia and other reference works, offline maps and data tools,
@@ -11,6 +11,7 @@ arch:
   - amd64
 init: false
 startup: services
+stdin: true
 ingress: true
 panel_icon: mdi:bookshelf
 backup_exclude:
@@ -29,7 +30,7 @@ ports:
   8900/tcp: null
 ports_description:
   8899/tcp: Library web interface (off by default, local network only)
-  8900/tcp: MCP endpoint for AI assistants (off by default, local network only)
+  8900/tcp: MCP endpoint for AI assistants (off by default, runs only with a port)
 map:
   - share:rw
   - media:rw
@@ -41,6 +42,7 @@ options:
   zim_sources: []
   prune: false
   download_limit: 0
+  update_interval_days: 7
   map_regions:
     - world
   map_update_days: 30
@@ -55,9 +57,9 @@ schema:
   prune: bool
   download_window: match(^([01][0-9]|2[0-3]):[0-5][0-9]-([01][0-9]|2[0-3]):[0-5][0-9]$)?
   download_limit: int(0,)
+  update_interval_days: int(1,)
   map_regions:
     - str
   map_update_days: int(0,)
-  mcp_token: password?
   mcp_tools: list(full|lean)
 image: "ghcr.io/tobehh/ha-app-offline-knowledge"

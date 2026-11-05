@@ -29,6 +29,11 @@ configuration:
   download_limit:
     name: Download-Geschwindigkeit
     description: Höchste Download-Geschwindigkeit in KB/s. 0 bedeutet ohne Begrenzung.
+  update_interval_days:
+    name: Prüfintervall für Inhalte
+    description: >-
+      Alle so viele Tage nach neuen Ausgaben der Bibliothek suchen. Neu ausgewählte
+      Inhalte werden auch bei jedem Start der App geladen.
   map_regions:
     name: Kartenregionen
     description: >-
@@ -38,11 +43,6 @@ configuration:
   map_update_days:
     name: Karten-Aktualisierung
     description: Karten erneuern, wenn sie so viele Tage alt sind. 0 bedeutet nie.
-  mcp_token:
-    name: MCP-Token
-    description: >-
-      Passwort für den MCP-Endpunkt, mindestens 16 Zeichen. Ohne Token bleibt der
-      MCP-Server aus.
   mcp_tools:
     name: MCP-Werkzeuge
     description: >-
@@ -53,5 +53,6 @@ network:
     Weboberfläche der Bibliothek. Standardmäßig aus; nur in einem vertrauenswürdigen
     lokalen Netz öffnen.
   8900/tcp: >-
-    MCP-Endpunkt für KI-Assistenten. Standardmäßig aus; nur in einem
-    vertrauenswürdigen lokalen Netz öffnen.
+    MCP-Endpunkt für KI-Assistenten. Der MCP-Server läuft nur, wenn hier ein Port gesetzt
+    ist. Nur in einem vertrauenswürdigen lokalen Netz öffnen. Adresse und Token stehen auf
+    der Startseite.

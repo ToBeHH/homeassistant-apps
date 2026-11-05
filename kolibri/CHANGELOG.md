@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2
+
+- The command `update` through `hassio.addon_stdin` starts a channel check right away.
+
 ## 0.1.1
 
 - The log says whether the first setup ran, failed or was skipped, and why.

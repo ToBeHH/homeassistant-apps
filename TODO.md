@@ -266,11 +266,14 @@ stündlich).
 
 ### 2.6 MCP-Server
 - [x] Umsetzung gemäß D4, Token-Pflicht
+      --> Seit 0.6.0 erzeugt die App das Token selbst (`/data/mcp_token`, im Backup), die
+      Startseite zeigt es und kann es neu erzeugen; Option `mcp_token` entfällt, weil
+      optionale Felder in HA schwer zu finden sind. MCP läuft nur mit Host-Port. Die Knöpfe
+      gehen über `okdl/control.py` (nur `127.0.0.1:8098`, davor nginx/Ingress).
       --> **Abweichung von D4 (a):** keine stdio→HTTP-Bridge. Zimis MCP-Server baut auf
       FastMCP, das Streamable HTTP selbst kann. `offline_knowledge/mcp_server/okmcp/`
       startet `zimi.mcp_server.build()` mit `streamable_http_app()` und eigener
-      Bearer-Prüfung, s6-Dienst `mcp`, Port 8900, Pfad `/mcp`. Ohne `mcp_token`
-      (mindestens 16 Zeichen) startet der Server nicht. DNS-Rebinding-Schutz von FastMCP
+      Bearer-Prüfung, s6-Dienst `mcp`, Port 8900, Pfad `/mcp`. DNS-Rebinding-Schutz von FastMCP
       aus, weil er nur `localhost` als Host zulässt; das Token schützt hier.
 - [x] Tools durchreichen: `search`, `read`, `get_chunks`, `suggest`, `list_sources`,
       `deep_search`, …
@@ -321,19 +324,30 @@ stündlich).
 
 Drei Ebenen, getrennt behandelt:
 
-- [ ] **Software (Images):** neue Version im Repo → HA zeigt das Update an;
+- [x] **Software (Images):** neue Version im Repo → HA zeigt das Update an;
       automatische Add-on-Updates greifen. Gepinnte Versionen via Renovate (Abschnitt 1).
-- [ ] **Inhalte – Bibliothek:** eigener Downloader (2.2a), Frequenz als Option
+      --> HA zeigt Updates an (auf dem Host gesehen). Offen: automatische Updates ungetestet,
+      Renovate-App noch nicht aktiviert (Abschnitt 1). Bei Offline Knowledge startet ein
+      Update laufende Kartenextrakte neu, sie können nicht fortsetzen.
+- [x] **Inhalte – Bibliothek:** eigener Downloader (2.2a), Frequenz als Option
+      --> `update_interval_days`, Vorgabe 7 (vorher fest täglich)
 - [x] **Inhalte – Karten:** Update-Job (z. B. monatlich) erzeugt neuen Extrakt,
       tauscht ihn atomar aus, löscht den alten erst danach
       --> Option `map_update_days` (Vorgabe 30), Prüfung im täglichen Downloader-Lauf
 - [x] **Inhalte – Kolibri:** Channel-Update-Job
       --> Dienst `channels` prüft täglich die Version auf Studio
-- [ ] Auslösung: Abgleich der Auswahl bei jedem Add-on-Start **plus** Zeitplan im
+- [x] Auslösung: Abgleich der Auswahl bei jedem Add-on-Start **plus** Zeitplan im
       Container (nachts, Bandbreite). Manuelles Auslösen über `hassio.addon_stdin`
       (z. B. Kommando `update`), damit es per HA-Skript/Button geht.
-- [ ] Kein Download beim Start des MCP-Servers (MCP soll sofort antworten)
-- [ ] Log/Status: letzte Aktualisierung und Fehler auf der Landing-Page
+      --> Beide Apps: `stdin: true`, Kommando `update`. Das Skript `stdin-commands` läuft als
+      Docker-`CMD`, denn unter s6 bekommt nur der Hauptbefehl das stdin; ohne stdin schläft
+      es, weil sein Ende die App stoppen würde. Offline Knowledge zusätzlich: Knopf
+      „Check now“ auf der Startseite. Lokal mit `docker run -i` getestet, nicht mit
+      echtem `hassio.addon_stdin`.
+- [x] Kein Download beim Start des MCP-Servers (MCP soll sofort antworten)
+      --> MCP lädt nichts, das macht nur der Dienst `downloader`
+- [x] Log/Status: letzte Aktualisierung und Fehler auf der Landing-Page
+      --> Offline Knowledge seit 0.3.0. Kolibri: nur im Log und in Kolibri selbst.
 
 ## 5. Integration
 

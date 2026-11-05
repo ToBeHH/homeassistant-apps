@@ -1,4 +1,4 @@
-# Handoff – Stand 05.11.2026 (nach Phase 3 und erstem Test auf dem HA-Host)
+# Handoff – Stand 05.11.2026 (nach Abschnitt 4 und erstem Test auf dem HA-Host)
 
 Übergabe aus der Claude-Chat-Sitzung an die Weiterarbeit in VS Code (mit Claude Code).
 Projektregeln stehen in [CLAUDE.md](CLAUDE.md), der Plan in [TODO.md](TODO.md).
@@ -121,12 +121,22 @@ Gelernt:
   Ohne `--fail-on-error` dürfte `importcontent` fehlerhafte Einzeldateien überspringen
   und den Kanal trotzdem als fertig melden (nicht geprüft).
 
+## Abschnitt 4 – erledigt bis auf Software-Updates (Offline Knowledge 0.6.0, Kolibri 0.1.2)
+
+- MCP-Token erzeugt die App selbst (`cont-init.d/mcp-token`), Startseite zeigt und erneuert
+  es über `okdl/control.py` (Steuer-API auf `127.0.0.1:8098`, davor nginx unter `/control/`).
+  `okmcp` liest die Datei bei Änderung neu, ein neues Token gilt also sofort.
+- MCP läuft nur mit Host-Port für 8900/tcp.
+- Auslösen: `update_interval_days`, „Check now“, `hassio.addon_stdin` mit `update`.
+- Getestet mit echtem s6 gegen den Fake-Supervisor: stdin, Token-Tausch, Knöpfe im iFrame,
+  kein Port, kein stdin. **Nicht** getestet: echtes `hassio.addon_stdin` und automatische
+  Updates.
+
 ## Nächster Schritt
 
-1. Offline Knowledge: Startseite und Karten-Viewer im Browser über Ingress, Zimi über
-   Port 8899, MCP mit `mcp_token` und Port 8900.
-2. Kolibri auf dem HA-Host testen, erst mit Blockly Games (0,3 GB).
-3. Weiter offen: `addon_stdin` für manuelles Update (4), Integration (5), Ressourcen (2.7).
+1. Auf dem Host: Karten-Viewer über Ingress, Zimi über Port 8899, MCP über die Startseite,
+   Kolibri-Einrichtung mit den neuen Log-Meldungen, `hassio.addon_stdin`.
+2. Weiter offen: Integration (5), Ressourcen (2.7), Release (6), Renovate aktivieren (1).
 
 ## Wissen aus der Recherche
 

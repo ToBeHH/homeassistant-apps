@@ -5,6 +5,7 @@
 # ==============================================================================
 
 declare library_port
+declare mcp_port
 declare data_path
 
 # The host port for Zimi, if the user opened one under Network.
@@ -13,11 +14,18 @@ if ! bashio::var.has_value "${library_port}" || [[ "${library_port}" == "null" ]
     library_port=null
 fi
 
+# The same for the MCP server, which only runs with a host port.
+mcp_port=$(bashio::app.port "8900/tcp")
+if ! bashio::var.has_value "${mcp_port}" || [[ "${mcp_port}" == "null" ]]; then
+    mcp_port=null
+fi
+
 mkdir -p /run/landing
 jq -n \
     --arg version "$(bashio::app.version)" \
     --argjson library_port "${library_port}" \
-    '{version: $version, library_port: $library_port}' \
+    --argjson mcp_port "${mcp_port}" \
+    '{version: $version, library_port: $library_port, mcp_port: $mcp_port}' \
     > /run/landing/info.json
 
 # Map tiles live in <data_path>/maps; nothing to link without storage.
