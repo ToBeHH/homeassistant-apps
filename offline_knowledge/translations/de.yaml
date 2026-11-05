@@ -38,7 +38,20 @@ configuration:
   map_update_days:
     name: Karten-Aktualisierung
     description: Karten erneuern, wenn sie so viele Tage alt sind. 0 bedeutet nie.
+  mcp_token:
+    name: MCP-Token
+    description: >-
+      Passwort für den MCP-Endpunkt, mindestens 16 Zeichen. Ohne Token bleibt der
+      MCP-Server aus.
+  mcp_tools:
+    name: MCP-Werkzeuge
+    description: >-
+      full bietet alle Werkzeuge, lean nur search, read und read_section (für kleine
+      Modelle).
 network:
   8899/tcp: >-
     Weboberfläche der Bibliothek. Standardmäßig aus; nur in einem vertrauenswürdigen
     lokalen Netz öffnen.
+  8900/tcp: >-
+    MCP-Endpunkt für KI-Assistenten. Standardmäßig aus; nur in einem
+    vertrauenswürdigen lokalen Netz öffnen.

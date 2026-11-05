@@ -1,7 +1,6 @@
 # Offline Knowledge
 
-> **Work in progress.** Library, maps, CyberChef and the start page work. The MCP
-> endpoint is still missing.
+> **Work in progress.** Library, maps, CyberChef, the start page and the MCP endpoint work.
 
 Offline Knowledge keeps a copy of the world's knowledge on your Home Assistant host so it
 stays available without an internet connection:
@@ -83,6 +82,31 @@ To try the app with very little data, use the `custom` profile with
 During updates the old and the new version of a file exist side by side for a short time,
 so keep some spare space.
 
+## MCP endpoint
+
+AI assistants can search and read the library through the
+[Model Context Protocol](https://modelcontextprotocol.io). To turn it on:
+
+1. Set `mcp_token` to a long random value, e.g. from `openssl rand -hex 32`. Without a
+   token of at least 16 characters the MCP server does not start.
+2. Set a host port for `8900/tcp` under **Network** in the app settings.
+
+Clients connect with Streamable HTTP to `http://<host>:<port>/mcp` and send the header
+`Authorization: Bearer <token>`. For example with Claude Code:
+
+```bash
+claude mcp add --transport http offline-knowledge http://<host>:<port>/mcp \
+  --header "Authorization: Bearer <token>"
+```
+
+`mcp_tools` selects the tools. `lean` offers `search`, `read` and `read_section`, which
+suits small models. `full` (default) offers all of Zimi's tools, including some that
+change the library's collections and favorites (`manage_collection`,
+`manage_favorites`) or start index builds (`build_index`).
+
+The MCP server needs about 100 MB of RAM on top of the library. New files show up about
+a minute after they arrive.
+
 ## Configuration
 
 | Option | Description |
@@ -96,6 +120,8 @@ so keep some spare space.
 | `download_limit` | Maximum download speed in KB/s, `0` for no limit. Library downloads only. |
 | `map_regions` | Map regions, see [Maps](#maps). Default: `world`. |
 | `map_update_days` | Renew maps after this many days, `0` for never. |
+| `mcp_token` | Token for the MCP endpoint, at least 16 characters. Empty: MCP stays off. |
+| `mcp_tools` | `full` or `lean`, see [MCP endpoint](#mcp-endpoint). |
 
 ## Access
 
@@ -112,13 +138,15 @@ so keep some spare space.
 | Port | Description |
 | --- | --- |
 | 8899/tcp | Library web interface and API. Off by default. Set a host port under **Network** to use it in your local network. |
+| 8900/tcp | MCP endpoint. Off by default, and needs `mcp_token`. |
 
 ## Security
 
 This app is meant for your local network only.
 
-- Do **not** forward port 8899 (or the MCP port, once there is one) on your router or
-  expose it through a reverse proxy to the internet. It has no login.
+- Do **not** forward port 8899 or 8900 on your router or expose them through a reverse
+  proxy to the internet. Port 8899 has no login, and port 8900 uses plain HTTP, so its
+  token is not encrypted on the way.
 - Use a VPN if you want to reach the library from outside.
 - The start page in the sidebar is protected by the Home Assistant login.
 

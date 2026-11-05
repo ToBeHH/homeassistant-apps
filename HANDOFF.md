@@ -1,4 +1,4 @@
-# Handoff – Stand 05.11.2026 (nach Phase 2.4 und erstem Test auf dem HA-Host)
+# Handoff – Stand 05.11.2026 (nach Phase 2.6 und erstem Test auf dem HA-Host)
 
 Übergabe aus der Claude-Chat-Sitzung an die Weiterarbeit in VS Code (mit Claude Code).
 Projektregeln stehen in [CLAUDE.md](CLAUDE.md), der Plan in [TODO.md](TODO.md).
@@ -94,12 +94,25 @@ Gelernt:
 - `finish`-Skripte loggen in UTC, die übrigen Meldungen in Ortszeit (nur kosmetisch,
   nicht geändert).
 
+## Phase 2.6 – erledigt (MCP, Offline Knowledge 0.5.0)
+
+- Keine Bridge nötig: `okmcp` serviert Zimis FastMCP-Tools direkt per Streamable HTTP
+  (Port 8900, `/mcp`) hinter einer Bearer-Prüfung. Eigener Prozess neben dem
+  Zimi-Server (ca. 100 MB RAM), gleiche Umgebung über `zimi-env.sh`. Er baut keine
+  Indizes, das macht der Zimi-Server; ein eigener Watcher hält ihn aktuell.
+- Lokal getestet mit dem MCP-Client aus dem `mcp`-Paket: 401 ohne/mit falschem Token,
+  fremder Host-Header, Tool-Liste, `search`, `read`, nachträglich ergänzte ZIM-Datei.
+- **Nicht** getestet: `mcp/run` unter dem Supervisor, Claude Desktop, Open WebUI, große
+  Bibliothek. Claude Desktop braucht vermutlich `mcp-remote` als Brücke (prüfen).
+- Abhängigkeiten von `mcp` sind nicht gepinnt, nur `mcp` selbst.
+
 ## Nächster Schritt
 
 1. Im Browser prüfen: Startseite und Karten-Viewer über Ingress, Zimi über Port 8899.
    Bleibt die Karte über Ingress leer, zuerst die Range-Anfragen durch den Proxy ansehen.
-2. Danach MCP (2.6). Weiter offen: `addon_stdin` für manuelles Update (4), Ressourcen
-   messen (2.7).
+2. MCP auf dem HA-Host testen: `mcp_token` setzen, Port 8900 öffnen, Client anbinden.
+3. Weiter offen: Kolibri (3), `addon_stdin` für manuelles Update (4), Ressourcen messen
+   (2.7).
 
 ## Wissen aus der Recherche
 
@@ -112,9 +125,8 @@ Stand 24.10.2026: 1.14.1)
   aus), `ZIMI_MANAGE_PASSWORD`, `ZIMI_API_TOKEN`, `ZIMI_AUTO_UPDATE` (aus lassen, das macht
   unser Downloader), `ZIMI_RATE_LIMIT`
 - API u. a.: `/search`, `/read`, `/chunks`, `/suggest`, `/list`, `/health`, `/openapi.json`
-- MCP: nur stdio, `python3 -m zimi.mcp_server`; Tools u. a. `search`, `read`, `get_chunks`,
-  `suggest`, `list_sources`, `deep_search`. → Für D4 eine stdio→Streamable-HTTP-Bridge
-  mit Bearer-Token im Container.
+- MCP: von Haus aus nur stdio, aber auf FastMCP-Basis; siehe Phase 2.6. Tools u. a.
+  `search`, `read`, `get_chunks`, `suggest`, `list_sources`, `deep_search`.
 - Neue/entfernte ZIM-Dateien: Watcher für `ZIMI_EXTRA_ZIM_DIRS` (siehe Phase 2.2)
 
 **Kiwix-Inhalte**

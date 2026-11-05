@@ -30,7 +30,7 @@ ARG BASEMAPS_SHA256=2d5d41b29cdd2364f7092ad439bd9d170b4f38cbec8858cefbe84d0f9812
 ARG BASEMAPS_ASSETS_COMMIT=028c18f713baecad011301ff7a69acc39bcc2ae7
 ARG BASEMAPS_ASSETS_SHA256=57e40e8c512bd8042d0a3a251f19d0d1c8523ad963c666c3c6643bada4dc92d0
 
-RUN fetch() { curl -fsSL -o "$2" "$1"; echo "$3  $2" | sha256sum -c -; } \
+RUN fetch() { curl -fsSL --retry 5 --retry-all-errors -o "$2" "$1"; echo "$3  $2" | sha256sum -c -; } \
     && fetch "https://github.com/gchq/CyberChef/releases/download/${CYBERCHEF_VERSION}/${CYBERCHEF_ASSET}" \
         cyberchef.zip "${CYBERCHEF_SHA256}" \
     && fetch "https://github.com/protomaps/go-pmtiles/releases/download/v${PMTILES_VERSION}/go-pmtiles_${PMTILES_VERSION}_Linux_x86_64.tar.gz" \
@@ -85,6 +85,8 @@ ARG ZIMI_VERSION=1.14.1
 ARG LIBZIM_VERSION=3.13.1
 # renovate: datasource=pypi depName=certifi
 ARG CERTIFI_VERSION=2026.10.23
+# renovate: datasource=pypi depName=mcp
+ARG MCP_VERSION=1.30.0
 
 ENV PATH="/opt/zimi/bin:${PATH}"
 
@@ -93,15 +95,17 @@ RUN apk add --no-cache \
         nginx \
         python3 \
     && python3 -m venv /opt/zimi \
+    && pip install --no-cache-dir "mcp==${MCP_VERSION}" \
     && pip install --no-cache-dir --no-deps \
         "zimi==${ZIMI_VERSION}" \
         "libzim==${LIBZIM_VERSION}" \
         "certifi==${CERTIFI_VERSION}" \
-    && python3 -c "import libzim, zimi.server" \
+    && python3 -c "import libzim, uvicorn, zimi.server, zimi.mcp_server" \
     && find /opt/zimi -name '__pycache__' -prune -exec rm -rf {} +
 
 # Own content downloader (stdlib only), runs in the same venv.
 COPY downloader/okdl /opt/okdl/okdl
+COPY mcp_server/okmcp /opt/okdl/okmcp
 
 COPY rootfs /
 RUN chmod a+x /etc/services.d/*/run /etc/services.d/*/finish

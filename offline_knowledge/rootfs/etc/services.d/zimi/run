@@ -1,13 +1,12 @@
 #!/usr/bin/with-contenv bashio
-# shellcheck shell=bash
+# shellcheck shell=bash disable=SC2154
 # ==============================================================================
 # Offline Knowledge – Zimi library server
 # ==============================================================================
 
-declare data_path
-declare zim_dir=""
-
-data_path=$(bashio::config 'data_path')
+# Sets data_path and zim_dir, exports the Zimi environment.
+# shellcheck source=/dev/null
+source /usr/local/share/offline_knowledge/zimi-env.sh
 
 bashio::log.info "Offline Knowledge $(bashio::app.version) starting"
 bashio::log.info "Profile: $(bashio::config 'profile'), languages: $(bashio::config 'languages' | tr '\n' ' ')"
@@ -21,30 +20,10 @@ elif [[ ! -w "${data_path}" ]]; then
     bashio::log.warning "data_path '${data_path}' is not writable. Nothing will be downloaded."
 else
     bashio::log.info "Storage location: ${data_path}"
-    zim_dir="${data_path}/zim"
 fi
 
-# The downloader owns <data_path>/zim. Zimi reads it as an extra library
-# folder: watched every 30 s, never written to. Its own ZIM_DIR stays empty.
-mkdir -p /var/lib/zimi/empty /data/zimi
-export ZIM_DIR=/var/lib/zimi/empty
-export ZIMI_DATA_DIR=/data/zimi
-if bashio::var.has_value "${zim_dir}"; then
-    mkdir -p "${zim_dir}"
-    export ZIMI_EXTRA_ZIM_DIRS="${zim_dir}"
-fi
 export ZIMI_HOST=0.0.0.0
 export ZIMI_PORT=8899
-
-# Nothing in Zimi talks to the internet; downloads are our own job (D3).
-export ZIMI_OFFLINE=1
-export ZIMI_BT=off
-export ZIMI_NEARBY=off
-export ZIMI_AUTO_UPDATE=0
-# Without /manage there is no login, so reading must stay open. Access control
-# is Home Assistant's job (ingress) and the MCP bridge's token.
-export ZIMI_MANAGE=0
-export ZIMI_PUBLIC_ACCESS=open
 
 bashio::log.info "Starting Zimi on port ${ZIMI_PORT}, library: ${zim_dir:-none}"
 cd "${ZIMI_DATA_DIR}" || bashio::exit.nok "Cannot enter ${ZIMI_DATA_DIR}"

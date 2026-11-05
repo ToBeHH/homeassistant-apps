@@ -37,6 +37,19 @@ configuration:
   map_update_days:
     name: Map update interval
     description: Renew maps when they are this many days old. 0 means never.
+  mcp_token:
+    name: MCP token
+    description: >-
+      Password for the MCP endpoint, at least 16 characters. Without a token the
+      MCP server stays off.
+  mcp_tools:
+    name: MCP tools
+    description: >-
+      full offers every tool, lean only search, read and read_section (for small
+      models).
 network:
   8899/tcp: >-
     Library web interface. Off by default; only open it in a trusted local network.
+  8900/tcp: >-
+    MCP endpoint for AI assistants. Off by default; only open it in a trusted local
+    network.

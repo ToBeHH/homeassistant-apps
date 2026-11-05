@@ -258,23 +258,33 @@ stündlich).
       `sub_filter`/Service-Worker wäre bei Zimis Release-Tempo zu zerbrechlich.
       Ingress zeigt deshalb die Startseite; Zimi über eigenen Port, die Startseite
       verlinkt ihn. nginx lässt nur `172.30.32.2` (Ingress-Gateway) und localhost zu.
-- [ ] Optionale LAN-Ports (Zimi, MCP) in `config.yaml`, standardmäßig aus
-      (Zimi 8899 erledigt in 0.2.0, MCP folgt)
+- [x] Optionale LAN-Ports (Zimi, MCP) in `config.yaml`, standardmäßig aus
+      --> Zimi 8899, MCP 8900
 - [x] Nicht fürs Internet gedacht: in DOCS.md deutlich dokumentieren
 - [x] Zimi-Login für den offenen Port? --> Entschieden: nein. Die Bibliothek muss nur
       im lokalen Netz erreichbar sein, nicht über externe Dienste.
 
 ### 2.6 MCP-Server
-- [ ] Umsetzung gemäß D4, Token-Pflicht
-- [ ] Tools durchreichen: `search`, `read`, `get_chunks`, `suggest`, `list_sources`,
+- [x] Umsetzung gemäß D4, Token-Pflicht
+      --> **Abweichung von D4 (a):** keine stdio→HTTP-Bridge. Zimis MCP-Server baut auf
+      FastMCP, das Streamable HTTP selbst kann. `offline_knowledge/mcp_server/okmcp/`
+      startet `zimi.mcp_server.build()` mit `streamable_http_app()` und eigener
+      Bearer-Prüfung, s6-Dienst `mcp`, Port 8900, Pfad `/mcp`. Ohne `mcp_token`
+      (mindestens 16 Zeichen) startet der Server nicht. DNS-Rebinding-Schutz von FastMCP
+      aus, weil er nur `localhost` als Host zulässt; das Token schützt hier.
+- [x] Tools durchreichen: `search`, `read`, `get_chunks`, `suggest`, `list_sources`,
       `deep_search`, …
+      --> Option `mcp_tools`: `full` (Vorgabe, 19 Tools) oder `lean` (3 Tools). `full`
+      enthält auch `manage_collection`, `manage_favorites` und `build_index`.
 - [ ] Test mit Claude Desktop und Open WebUI
+      (lokal getestet: echter MCP-Client aus dem `mcp`-Paket im Container)
 - [ ] Optional/später: Karten-Tool (Ortssuche), sobald Geocoding da ist
 
 ### 2.7 Ressourcen
 - [ ] RAM/CPU im Leerlauf und bei Suche messen, Ergebnis in DOCS.md
       Bisher auf dem HA-Host (0.4.0), nur RAM: 61 MB leer, 80 MB mit Inhalten, 94 MB beim
       Laden. Es fehlen CPU und der Wert bei der Suche mit der großen Bibliothek.
+      MCP-Prozess zusätzlich ca. 100 MB (lokal mit kleiner Bibliothek, 0.5.0).
 
 ## 3. Add-on „Kolibri“
 

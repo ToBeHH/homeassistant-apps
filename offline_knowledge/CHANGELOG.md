@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.0
+
+- MCP endpoint: AI assistants can search and read the library at port 8900, path `/mcp`
+  (Streamable HTTP). Off until `mcp_token` is set and a host port is opened.
+- New options `mcp_token` and `mcp_tools` (`full` or `lean`).
+
 ## 0.4.1
 
 - Removed WikEM from the `full` profile; it is no longer in the Kiwix catalog.

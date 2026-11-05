@@ -1,0 +1,24 @@
+#!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
+# ==============================================================================
+# Offline Knowledge – MCP server (Streamable HTTP, bearer token required)
+# ==============================================================================
+
+# No token, no server: the port stays closed.
+if ! bashio::config.has_value 'mcp_token'; then
+    bashio::log.info "MCP server off: no mcp_token set"
+    exec sleep 2147483647
+fi
+if [[ "$(bashio::config 'mcp_token' | wc -c)" -le 16 ]]; then
+    bashio::log.warning "MCP server off: mcp_token needs at least 16 characters"
+    exec sleep 2147483647
+fi
+
+# shellcheck source=/dev/null
+source /usr/local/share/offline_knowledge/zimi-env.sh
+
+bashio::log.info "Starting MCP server on port 8900, tools: $(bashio::config 'mcp_tools')"
+cd "${ZIMI_DATA_DIR}" || bashio::exit.nok "Cannot enter ${ZIMI_DATA_DIR}"
+export PYTHONPATH=/opt/okdl
+export PYTHONUNBUFFERED=1
+exec python3 -m okmcp --options /data/options.json --port 8900

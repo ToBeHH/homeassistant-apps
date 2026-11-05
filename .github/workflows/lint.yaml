@@ -83,6 +83,10 @@ jobs:
         working-directory: offline_knowledge/downloader
         run: python -m unittest discover -t . -s tests -v
 
+      - name: 🚀 Run MCP server unit tests
+        working-directory: offline_knowledge/mcp_server
+        run: python -m unittest discover -t . -s tests -v
+
   shellcheck:
     name: ShellCheck
     runs-on: ubuntu-latest
