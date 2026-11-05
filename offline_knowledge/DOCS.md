@@ -156,3 +156,8 @@ The app is MIT licensed. Bundled tools keep their own licenses: Zimi (MIT), Cybe
 (Apache 2.0), MapLibre GL JS, PMTiles and the Protomaps basemap (BSD 3-Clause), Noto Sans
 fonts (OFL). Downloaded content keeps its own license, e.g. Wikipedia (CC BY-SA) and
 OpenStreetMap (ODbL).
+
+## Support
+
+<p align="center">If you love my work, please</p>
+<p><a href="https://www.buymeacoffee.com/ToBeHH" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a></p>

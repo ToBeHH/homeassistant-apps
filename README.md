@@ -42,3 +42,6 @@ The add-on code in this repository is MIT licensed (see [LICENSE](LICENSE)).
 Bundled or downloaded components keep their own licenses: Zimi (MIT), CyberChef (Apache-2.0),
 Protomaps tools (BSD-3-Clause), Kolibri (MIT). Content such as Wikipedia (CC BY-SA) and
 OpenStreetMap data (ODbL) is downloaded at runtime and is not part of this repository.
+
+<p align="center">If you love my work, please</p>
+<p><a href="https://www.buymeacoffee.com/ToBeHH" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a></p>
