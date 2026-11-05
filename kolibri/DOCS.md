@@ -1,27 +1,77 @@
 # Kolibri
 
-> **Work in progress.** This version is a scaffold and does not run Kolibri yet.
-
 [Kolibri](https://learningequality.org/kolibri/) is an offline learning platform by
 Learning Equality. It serves courses such as Khan Academy with videos, exercises and
 progress tracking, without an internet connection.
 
+## First steps
+
+1. Create a folder with enough free space and set it as **Storage location** (`data_path`).
+2. Set `admin_password` for the first setup, or leave it empty and use Kolibri's setup
+   wizard.
+3. Add channel IDs to `channels` and start the app.
+4. Open Kolibri from the sidebar. For games and simulations also set a host port for
+   `8081/tcp` under **Network**, see [Access](#access).
+
 ## Storage
 
-Set **Storage location** (`data_path`) to a folder with enough free space **before** importing
-channels, e.g. a folder under `/share` or on an external drive under `/media`. Content is
-excluded from Home Assistant backups. A full Khan Academy channel can take tens of gigabytes.
+Content goes to `<data_path>/kolibri`; accounts and learning progress stay in the app's
+own data and in its backup. Nothing is downloaded while `data_path` is empty or the folder
+does not exist.
+
+Downloaded content is not part of the app's backup. `/share` and `/media` are separate
+folders in a full Home Assistant backup, so leave your storage folder out there.
+
+## Channels
+
+Channel IDs have 32 hexadecimal characters. The public channels are listed at
+<https://studio.learningequality.org/api/public/v1/channels>, and Kolibri's own channel
+page (**Device → Channels → Import**) shows them too.
+
+| Channel | ID | Size (11/2026) |
+| --- | --- | --- |
+| Khan Academy (English, US curriculum) | `c9d7f950ab6b5a1199e3d6c10d7f0103` | 68 GB |
+| Khan Academy (Español) | `c1f2b7e6ac9f56a2bb44fa7a48b66dce` | 39 GB |
+| Khan Academy (Français) | `878ec2e6f88c5c268b1be6f202833cd4` | 23 GB |
+| Blockly Games, good for a first test | `e409b964366a59219c148f2aaa741f43` | 0.3 GB |
+
+There is currently no public German Khan Academy channel.
+
+The app imports new channels at start and checks once a day for new versions. Before a new
+channel it checks the free space (channel size plus a reserve of 2 GB or 2 %, whichever is
+larger). Imports start right away; there is no download window. Progress is in the log.
+
+Removing an ID from `channels` does not delete the channel. Use
+**Device → Channels** in Kolibri for that.
 
 ## Configuration
 
 | Option | Description |
 | --- | --- |
-| `data_path` | Folder for Kolibri content. Nothing is downloaded while this is empty or the folder does not exist. |
+| `data_path` | Folder for Kolibri content. |
 | `channels` | Kolibri channel IDs to import. |
+| `facility_name` | Name of the facility. First setup only. |
+| `admin_username` | Name of the admin account. First setup only. |
+| `admin_password` | Password of the admin account. First setup only; change it in Kolibri afterwards. Empty: Kolibri shows its setup wizard. |
+| `language` | Default language, e.g. `de`, `en`. First setup only. |
+
+## Access
+
+- **Sidebar:** the **Kolibri** entry, or *Open Web UI*.
+- **Local network:** set a host port for `8080/tcp` under **Network**. Learners can then
+  open Kolibri without a Home Assistant account, using `http://<host>:<port>/`.
+- **HTML5 content:** games and simulations load from a second address, directly from the
+  browser. Set a host port for `8081/tcp` under **Network**, not 8080, 8099 or 18080.
+  Videos and exercises work without it.
+
+If you reach Home Assistant through HTTPS, browsers block HTML5 content from the plain HTTP
+port. Use the port 8080 address for it.
 
 ## Security
 
-This app is meant for your local network only. Do not expose it to the internet.
+This app is meant for your local network only. Do not forward its ports on your router or
+expose them to the internet; they use plain HTTP. Kolibri has its own accounts. Its
+statistics ping and network announcements are off.
 
 ## Licenses
 

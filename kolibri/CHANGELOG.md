@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.0
+
+- Kolibri 0.19.5, available in the Home Assistant sidebar (ingress) and optionally on
+  port 8080 in the local network. Port 8081 serves HTML5 content.
+- Imports the channels from the `channels` option at start, then checks for new
+  versions once a day. Nothing is downloaded without a usable storage location.
+- First setup from the new options `facility_name`, `admin_username`, `admin_password`
+  and `language`; without a password Kolibri shows its setup wizard.
+- No statistics ping, no announcing on the network.
+
 ## 0.0.2
 
 - Use `bashio::app.*` instead of the deprecated `bashio::addon.*` functions.

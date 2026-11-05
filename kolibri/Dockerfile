@@ -2,10 +2,31 @@
 ARG BUILD_FROM=ghcr.io/home-assistant/base:3.23
 FROM ${BUILD_FROM}
 
-# Phase 1: scaffold only. Kolibri itself is added in phase 3 (see TODO.md).
+# renovate: datasource=pypi depName=kolibri
+ARG KOLIBRI_VERSION=0.19.5
+
+ENV PATH="/opt/kolibri/bin:${PATH}"
+
+# dist/cext holds optional glibc binaries, of no use on Alpine (165 MB).
+
+RUN apk add --no-cache \
+        libstdc++ \
+        nginx \
+        python3 \
+    && python3 -m venv /opt/kolibri \
+    && pip install --no-cache-dir "kolibri==${KOLIBRI_VERSION}" \
+    && rm -rf /opt/kolibri/lib/python3*/site-packages/kolibri/dist/cext \
+    && find /opt/kolibri -name '__pycache__' -prune -exec rm -rf {} +
+
+# Imports the channels from the options (stdlib only), runs in the same venv.
+COPY channel_sync/kbsync /opt/kbsync/kbsync
 
 COPY rootfs /
 RUN chmod a+x /etc/services.d/*/run /etc/services.d/*/finish
+
+# Through nginx, which adds the path prefix. The first start migrates databases.
+HEALTHCHECK --interval=60s --timeout=10s --start-period=15m --retries=3 \
+    CMD ["curl", "-fsS", "-o", "/dev/null", "http://127.0.0.1:8099/api/public/info/"]
 
 LABEL \
     org.opencontainers.image.title="Home Assistant App: Kolibri" \

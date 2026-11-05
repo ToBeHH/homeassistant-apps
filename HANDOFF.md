@@ -1,4 +1,4 @@
-# Handoff – Stand 05.11.2026 (nach Phase 2.6 und erstem Test auf dem HA-Host)
+# Handoff – Stand 05.11.2026 (nach Phase 3 und erstem Test auf dem HA-Host)
 
 Übergabe aus der Claude-Chat-Sitzung an die Weiterarbeit in VS Code (mit Claude Code).
 Projektregeln stehen in [CLAUDE.md](CLAUDE.md), der Plan in [TODO.md](TODO.md).
@@ -106,13 +106,27 @@ Gelernt:
   Bibliothek. Claude Desktop braucht vermutlich `mcp-remote` als Brücke (prüfen).
 - Abhängigkeiten von `mcp` sind nicht gepinnt, nur `mcp` selbst.
 
+## Phase 3 – erledigt (Kolibri 0.1.0)
+
+- Kolibri 0.19.5 (Image 192 MB) mit nginx davor, Ingress und optionalen Ports 8080/8081,
+  Dienst `channels` (`channel_sync/kbsync`) für die Importe. Details und drei Fallstricke
+  (`X-Frame-Options`, `ZIP_CONTENT_ORIGIN`, `TZ`) in TODO.md 3.
+- Testaufbau, den man wiederverwenden kann: Image mit echtem `/init` starten, daneben ein
+  kleiner Fake-Supervisor (`/addons/self/info`, `/addons/self/options/config`) und ein
+  Ingress-nginx auf `172.30.32.2`, Netz `172.30.32.0/24`, Fake mit Alias `supervisor`,
+  `SUPERVISOR_TOKEN` setzen. So laufen die `run`-Skripte samt bashio wie auf dem Host.
+- Getestet: Einrichtung, zwei echte Kanäle, unbekannte ID, Neustart, kein Speicherort,
+  iFrame hinter dem Proxy, Login, HTML5-Spiel über den zweiten Port, LAN-Port.
+- **Nicht** getestet: echter HA-Host und HTTPS, große Kanäle, Import-Abbruch mittendrin.
+  Ohne `--fail-on-error` dürfte `importcontent` fehlerhafte Einzeldateien überspringen
+  und den Kanal trotzdem als fertig melden (nicht geprüft).
+
 ## Nächster Schritt
 
-1. Im Browser prüfen: Startseite und Karten-Viewer über Ingress, Zimi über Port 8899.
-   Bleibt die Karte über Ingress leer, zuerst die Range-Anfragen durch den Proxy ansehen.
-2. MCP auf dem HA-Host testen: `mcp_token` setzen, Port 8900 öffnen, Client anbinden.
-3. Weiter offen: Kolibri (3), `addon_stdin` für manuelles Update (4), Ressourcen messen
-   (2.7).
+1. Offline Knowledge: Startseite und Karten-Viewer im Browser über Ingress, Zimi über
+   Port 8899, MCP mit `mcp_token` und Port 8900.
+2. Kolibri auf dem HA-Host testen, erst mit Blockly Games (0,3 GB).
+3. Weiter offen: `addon_stdin` für manuelles Update (4), Integration (5), Ressourcen (2.7).
 
 ## Wissen aus der Recherche
 

@@ -6,4 +6,26 @@ configuration:
       drive under /media. Nothing is downloaded until this is set and the folder exists.
   channels:
     name: Channels
-    description: Kolibri channel IDs to import, e.g. a Khan Academy channel.
+    description: >-
+      Kolibri channel IDs to import (32 hexadecimal characters), e.g. a Khan Academy
+      channel. See the documentation for how to find them.
+  facility_name:
+    name: Facility name
+    description: Name of the Kolibri facility. Only used at the first setup.
+  admin_username:
+    name: Admin username
+    description: Only used at the first setup.
+  admin_password:
+    name: Admin password
+    description: >-
+      Only used at the first setup. Without a password Kolibri shows its setup
+      wizard instead.
+  language:
+    name: Language
+    description: Default language of Kolibri, e.g. de or en. Only used at the first setup.
+network:
+  8080/tcp: >-
+    Kolibri in the local network. Off by default.
+  8081/tcp: >-
+    HTML5 content such as games and simulations. Without this port they don't load.
+    Off by default.

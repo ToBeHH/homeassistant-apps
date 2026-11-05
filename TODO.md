@@ -288,15 +288,34 @@ stündlich).
 
 ## 3. Add-on „Kolibri“
 
-- [ ] Image: Kolibri per pip (gepinnt) auf HA-Base-Image
-- [ ] `KOLIBRI_HOME`: Datenbank unter `/data`, Inhalte unter `<data_path>/kolibri`
-- [ ] Ersteinrichtung automatisieren (`provisiondevice`: Facility, Admin aus Optionen)
-- [ ] Option `channels` (Channel-IDs) + Sprache; Import per
+- [x] Image: Kolibri per pip (gepinnt) auf HA-Base-Image
+      --> 0.19.5; `dist/cext` (glibc-Binärdateien, 165 MB) entfernt, läuft rein in Python.
+      Image 192 MB.
+- [x] `KOLIBRI_HOME`: Datenbank unter `/data`, Inhalte unter `<data_path>/kolibri`
+      --> `/data/kolibri`; `KOLIBRI_CONTENT_DIR` nur bei nutzbarem Speicherort.
+      `KOLIBRI_DISABLE_PING=true`, `KOLIBRI_ZEROCONF_ENABLED=false`. Ohne `TZ` startet
+      Kolibri nicht, daher Rückfall auf UTC.
+- [x] Ersteinrichtung automatisieren (`provisiondevice`: Facility, Admin aus Optionen)
+      --> `facility_name`, `admin_username`, `admin_password`, `language`, Preset
+      `nonformal`, einmalig (Marker `.provisioned`). Ohne Passwort: Assistent von Kolibri.
+- [x] Option `channels` (Channel-IDs) + Sprache; Import per
       `kolibri manage importchannel network …` / `importcontent`
-- [ ] Ingress mit URL-Präfix testen (`KOLIBRI_URL_PATH_PREFIX`)
-- [ ] `backup_exclude` für Inhalte
+      --> `kolibri/channel_sync/kbsync/`, s6-Dienst `channels`, läuft neben dem Server
+      (`--skip-update`). Version und Größe aus der Studio-API, Stand in
+      `/data/channel_sync.json`. Abgewählte Kanäle bleiben; kein Zeitfenster.
+- [x] Ingress mit URL-Präfix testen (`KOLIBRI_URL_PATH_PREFIX`)
+      --> Funktioniert: nginx setzt das vom Ingress entfernte Präfix wieder davor und
+      entfernt `X-Frame-Options: DENY`. HTML5-Inhalte kommen vom ZIP-Port; `ZIP_CONTENT_ORIGIN`
+      mit Portnummer lässt Kolibri 0.19 in der CSP abstürzen (500), deshalb lauscht Kolibri
+      auf der Nummer des Host-Ports und nginx leitet 8081 weiter. Optionale Ports 8080, 8081.
+      Getestet mit echtem s6/bashio gegen nachgebauten Supervisor/Ingress, nicht auf dem Host.
+- [x] `backup_exclude` für Inhalte
 - [ ] RAM/CPU messen
-- [ ] MCP gemäß D5
+      Bisher lokal, nur RAM: Kolibri ca. 95–125 MB, Import-Dienst ca. 20 MB.
+- [x] MCP gemäß D5 --> keins
+- [ ] Auf dem HA-Host testen, inklusive echtem Ingress und HTML5-Inhalten
+- [ ] Offen zu D9: Auf Studio gibt es keinen öffentlichen Kanal mit Hauptsprache Deutsch,
+      auch kein Khan Academy DE. Khan Academy EN (US) ist inzwischen 68 GB groß.
 
 ## 4. Update-Mechanismus
 
@@ -308,7 +327,8 @@ Drei Ebenen, getrennt behandelt:
 - [x] **Inhalte – Karten:** Update-Job (z. B. monatlich) erzeugt neuen Extrakt,
       tauscht ihn atomar aus, löscht den alten erst danach
       --> Option `map_update_days` (Vorgabe 30), Prüfung im täglichen Downloader-Lauf
-- [ ] **Inhalte – Kolibri:** Channel-Update-Job
+- [x] **Inhalte – Kolibri:** Channel-Update-Job
+      --> Dienst `channels` prüft täglich die Version auf Studio
 - [ ] Auslösung: Abgleich der Auswahl bei jedem Add-on-Start **plus** Zeitplan im
       Container (nachts, Bandbreite). Manuelles Auslösen über `hassio.addon_stdin`
       (z. B. Kommando `update`), damit es per HA-Skript/Button geht.
@@ -327,6 +347,6 @@ Drei Ebenen, getrennt behandelt:
 - [x] Erst mit kleinem ZIM testen, dann große Inhalte laden
       --> Eine ZIM-Datei + Weltkarte: geladen, geprüft, Zimi übernimmt nach ca. 40 s
       ohne Neustart, Suche funktioniert.
-- [ ] Umzug der Inhalte auf die externe Platte testen (D6)
+- [x] Umzug der Inhalte auf die externe Platte testen (D6)
 - [ ] DOCS.md (Englisch) je Add-on, README aktualisieren
 - [ ] Release v0.1.0

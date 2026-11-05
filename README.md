@@ -15,8 +15,8 @@ with Project NOMAD or Crosstalk Solutions.
 
 | Add-on | What it bundles | Status |
 | --- | --- | --- |
-| [Offline Knowledge](offline_knowledge/) | [Zimi](https://github.com/epheterson/Zimi) for Kiwix ZIM archives (Wikipedia, Wiktionary, Gutenberg, …), [CyberChef](https://github.com/gchq/CyberChef), an offline map viewer for [Protomaps](https://protomaps.com) PMTiles, and an MCP server | planned |
-| [Kolibri](kolibri/) | [Kolibri](https://learningequality.org/kolibri/) learning platform (e.g. Khan Academy channels) | planned |
+| [Offline Knowledge](offline_knowledge/) | [Zimi](https://github.com/epheterson/Zimi) for Kiwix ZIM archives (Wikipedia, Wiktionary, Gutenberg, …), [CyberChef](https://github.com/gchq/CyberChef), an offline map viewer for [Protomaps](https://protomaps.com) PMTiles, and an MCP server | experimental |
+| [Kolibri](kolibri/) | [Kolibri](https://learningequality.org/kolibri/) learning platform (e.g. Khan Academy channels) | experimental |
 
 ## Installation
 

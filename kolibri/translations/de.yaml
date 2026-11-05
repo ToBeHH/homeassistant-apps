@@ -3,8 +3,32 @@ configuration:
     name: Speicherort
     description: >-
       Ordner für die Kolibri-Inhalte, z. B. /share/kolibri oder ein Ordner auf einer
-      externen Platte unter /media. Es wird nichts heruntergeladen, solange dieser
-      Pfad nicht gesetzt ist und der Ordner existiert.
+      externen Platte unter /media. Es wird nichts heruntergeladen, solange dieser Pfad
+      nicht gesetzt ist und der Ordner existiert.
   channels:
     name: Kanäle
-    description: Zu importierende Kolibri-Kanal-IDs, z. B. ein Khan-Academy-Kanal.
+    description: >-
+      Zu importierende Kolibri-Kanal-IDs (32 Hexadezimalzeichen), z. B. ein Khan-Academy-Kanal.
+      Wie man sie findet, steht in der Dokumentation.
+  facility_name:
+    name: Name der Einrichtung
+    description: Name der Kolibri-Einrichtung. Wird nur bei der ersten Einrichtung verwendet.
+  admin_username:
+    name: Admin-Benutzername
+    description: Wird nur bei der ersten Einrichtung verwendet.
+  admin_password:
+    name: Admin-Passwort
+    description: >-
+      Wird nur bei der ersten Einrichtung verwendet. Ohne Passwort zeigt Kolibri
+      stattdessen seinen Einrichtungsassistenten.
+  language:
+    name: Sprache
+    description: >-
+      Standardsprache von Kolibri, z. B. de oder en. Wird nur bei der ersten Einrichtung
+      verwendet.
+network:
+  8080/tcp: >-
+    Kolibri im lokalen Netz. Standardmäßig aus.
+  8081/tcp: >-
+    HTML5-Inhalte wie Spiele und Simulationen. Ohne diesen Port laden sie nicht.
+    Standardmäßig aus.

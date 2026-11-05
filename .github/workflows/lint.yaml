@@ -87,6 +87,10 @@ jobs:
         working-directory: offline_knowledge/mcp_server
         run: python -m unittest discover -t . -s tests -v
 
+      - name: 🚀 Run Kolibri channel sync unit tests
+        working-directory: kolibri/channel_sync
+        run: python -m unittest discover -t . -s tests -v
+
   shellcheck:
     name: ShellCheck
     runs-on: ubuntu-latest

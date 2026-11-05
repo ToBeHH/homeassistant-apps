@@ -1,6 +1,6 @@
 # https://developers.home-assistant.io/docs/apps/configuration
 name: Kolibri
-version: "0.0.2"
+version: "0.1.0"
 slug: kolibri
 description: >-
   Kolibri offline learning platform, e.g. Khan Academy courses, available
@@ -11,14 +11,36 @@ arch:
   - amd64
 init: false
 startup: services
+ingress: true
+panel_icon: mdi:school
+backup_exclude:
+  # Rebuilt or re-imported; accounts and progress stay in the backup.
+  - "kolibri/content"
+  - "kolibri/logs"
+  - "kolibri/process_cache"
+  - "kolibri/server.pid"
+ports:
+  8080/tcp: null
+  8081/tcp: null
+ports_description:
+  8080/tcp: Kolibri in the local network (off by default)
+  8081/tcp: HTML5 content, needed for games and simulations (off by default)
 map:
   - share:rw
   - media:rw
 options:
   data_path: ""
   channels: []
+  facility_name: Home
+  admin_username: admin
+  admin_password: ""
+  language: en
 schema:
   data_path: str?
   channels:
-    - str
+    - match(^[0-9a-f]{32}$)
+  facility_name: str
+  admin_username: str
+  admin_password: password?
+  language: match(^[a-z]{2,3}(-[a-z0-9]+)?$)
 image: "ghcr.io/tobehh/ha-app-kolibri"

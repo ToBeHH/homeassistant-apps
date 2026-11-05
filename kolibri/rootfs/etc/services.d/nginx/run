@@ -1,0 +1,27 @@
+#!/usr/bin/with-contenv bashio
+# shellcheck shell=bash disable=SC2154
+# ==============================================================================
+# Kolibri – nginx between ingress or the local network and Kolibri
+# ==============================================================================
+
+# shellcheck source=/dev/null
+source /usr/local/share/kolibri_app/kolibri-env.sh
+
+sed "s|@PREFIX@|$(bashio::app.ingress_entry)|g" /etc/nginx/nginx.conf.in > /run/nginx.conf
+
+# With host port 8081 Kolibri listens on the container's 8081 itself.
+if [[ "${zip_internal_port}" == "8081" ]]; then
+    : > /run/nginx-zip.conf
+else
+    cat > /run/nginx-zip.conf <<EOF
+server {
+    listen 8081;
+
+    location / {
+        proxy_pass http://127.0.0.1:${zip_internal_port};
+    }
+}
+EOF
+fi
+
+exec nginx -c /run/nginx.conf -g "daemon off;"

@@ -1,0 +1,15 @@
+#!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
+# ==============================================================================
+# Kolibri – imports the channels from the options
+# ==============================================================================
+
+# shellcheck source=/dev/null
+source /usr/local/share/kolibri_app/kolibri-env.sh
+
+until curl -fs -o /dev/null http://127.0.0.1:8099/api/public/info/; do
+    sleep 5
+done
+
+export PYTHONPATH=/opt/kbsync
+exec python3 -m kbsync --options /data/options.json --state /data/channel_sync.json

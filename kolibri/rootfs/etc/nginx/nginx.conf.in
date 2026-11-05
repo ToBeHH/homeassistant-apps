@@ -1,0 +1,56 @@
+# @PREFIX@ is the ingress path, filled in by the run script. Kolibri serves
+# everything below that prefix; Home Assistant's ingress proxy strips it.
+worker_processes 1;
+pid /run/nginx.pid;
+error_log /dev/stderr warn;
+
+events {
+    worker_connections 256;
+}
+
+http {
+    access_log off;
+    server_tokens off;
+    client_max_body_size 0;
+
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
+    proxy_set_header Host $http_host;
+    proxy_buffering off;
+    proxy_request_buffering off;
+    proxy_read_timeout 300s;
+    proxy_redirect off;
+    # The port in the browser isn't the one nginx listens on.
+    absolute_redirect off;
+
+    # Home Assistant ingress
+    server {
+        listen 8099 default_server;
+
+        allow 172.30.32.2;
+        allow 127.0.0.1;
+        deny all;
+
+        location / {
+            proxy_pass http://127.0.0.1:18080@PREFIX@/;
+            # Kolibri sends DENY, but ingress pages live in an iframe.
+            proxy_hide_header X-Frame-Options;
+        }
+    }
+
+    # Optional port in the local network
+    server {
+        listen 8080;
+
+        location = / {
+            return 302 @PREFIX@/;
+        }
+
+        location / {
+            proxy_pass http://127.0.0.1:18080;
+        }
+    }
+
+    # HTML5 content, if needed
+    include /run/nginx-zip.conf;
+}

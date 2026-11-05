@@ -1,11 +1,14 @@
 #!/usr/bin/with-contenv bashio
-# shellcheck shell=bash
+# shellcheck shell=bash disable=SC2154
 # ==============================================================================
-# Kolibri – main service (phase 1 placeholder)
+# Kolibri – learning platform
 # ==============================================================================
 
-declare data_path
-data_path=$(bashio::config 'data_path')
+declare marker=/data/kolibri/.provisioned
+declare output
+
+# shellcheck source=/dev/null
+source /usr/local/share/kolibri_app/kolibri-env.sh
 
 bashio::log.info "Kolibri app $(bashio::app.version) starting"
 
@@ -19,7 +22,21 @@ else
     bashio::log.info "Storage location: ${data_path}"
 fi
 
-bashio::log.info "This is a scaffold build; Kolibri is not installed yet."
+# First start only. Without a password Kolibri shows its setup wizard instead.
+if [[ ! -f "${marker}" ]] && bashio::config.has_value 'admin_password'; then
+    bashio::log.info "Setting up Kolibri"
+    if output=$(kolibri manage provisiondevice \
+        --facility "$(bashio::config 'facility_name')" \
+        --superusername "$(bashio::config 'admin_username')" \
+        --superuserpassword "$(bashio::config 'admin_password')" \
+        --preset nonformal \
+        --language_id "$(bashio::config 'language')" \
+        --noinput 2>&1) || [[ "${output}" == *DeviceAlreadyProvisioned* ]]; then
+        touch "${marker}"
+    else
+        bashio::log.warning "Setup failed, Kolibri will show its setup wizard:"
+        bashio::log.warning "$(tail -n 3 <<< "${output}")"
+    fi
+fi
 
-# Keep the service running so the app shows as started.
-exec sleep 2147483647
+exec kolibri start --foreground --port 18080 --zip-port "${zip_internal_port}"
