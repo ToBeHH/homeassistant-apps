@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.3
+
+- AppArmor profile, in complain mode for now: violations are only logged.
+- Options added in later versions are optional, so saving after an update can't fail on them.
+
 ## 0.1.2
 
 - The command `update` through `hassio.addon_stdin` starts a channel check right away.

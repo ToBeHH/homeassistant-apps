@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.7.0
+
+- Offline place search, off by default (`place_search`): towns, mountains, rivers and postal
+  codes from GeoNames, streets and points of interest from your map regions. A search field
+  in the map viewer jumps there, and the new MCP tool `find_place` answers assistants.
+- AppArmor profile, in complain mode for now: violations are only logged.
+- Fixes saving the configuration after an update ("Missing option 'update_interval_days'"):
+  options added in later versions are now optional.
+
 ## 0.6.1
 
 - New map regions for all continents: `africa`, `antarctica`, `asia`, `north_america`,

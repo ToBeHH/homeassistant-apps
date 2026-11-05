@@ -2,3 +2,4 @@
 **/*.pyc
 downloader/tests
 mcp_server/tests
+apparmor.txt

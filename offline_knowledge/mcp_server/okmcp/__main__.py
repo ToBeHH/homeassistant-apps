@@ -6,6 +6,7 @@ import logging
 import sys
 
 from .auth import BearerAuth, TokenFile
+from .places import format_hits
 
 
 def main(argv=None):
@@ -25,6 +26,7 @@ def main(argv=None):
     # Imported late: these read their paths from the environment on import.
     import uvicorn
     from mcp.server.transport_security import TransportSecuritySettings
+    from okdl import geocode
     from zimi import libfolders, mcp_server, server
 
     # Two log lines per request otherwise.
@@ -36,6 +38,14 @@ def main(argv=None):
     libfolders.ensure_watch()
 
     mcp = mcp_server.build(options.get("mcp_tools") or "full")
+
+    def find_place(query: str, limit: int = 10) -> str:
+        """Find a place offline: town, postal code, mountain, river, street or point of
+        interest. A street can be narrowed down by town ("Hauptstraße Kiel"). Returns names
+        with latitude and longitude."""
+        return format_hits(query, geocode.search(query, options.get("data_path") or "", limit))
+
+    mcp.tool(name="find_place")(find_place)
     mcp.settings.stateless_http = True
     # FastMCP only accepts localhost as Host by default. The token already
     # stops what this protects against: a browser page can't supply it.

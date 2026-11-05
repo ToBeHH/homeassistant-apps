@@ -1,4 +1,4 @@
-# Handoff – Stand 05.11.2026 (nach Abschnitt 4 und erstem Test auf dem HA-Host)
+# Handoff – Stand 05.11.2026 (nach Abschnitt 4, Ortssuche und erstem Test auf dem HA-Host)
 
 Übergabe aus der Claude-Chat-Sitzung an die Weiterarbeit in VS Code (mit Claude Code).
 Projektregeln stehen in [CLAUDE.md](CLAUDE.md), der Plan in [TODO.md](TODO.md).
@@ -132,11 +132,23 @@ Gelernt:
   kein Port, kein stdin. **Nicht** getestet: echtes `hassio.addon_stdin` und automatische
   Updates.
 
+## Ortssuche, AppArmor (Offline Knowledge 0.7.0, Kolibri 0.1.3)
+
+- Details in TODO.md 2.4. Getestet: echter GeoNames-Index, Index aus echtem Hamburg-Extrakt,
+  Suchfeld im Viewer, `find_place` per MCP-Client. **Nicht** getestet: Bau für ganz Europa,
+  Bau auf dem Host (Indexbau beginnt nach Neustart von vorn).
+- AppArmor: Profile vorerst im Modus `complain`. Der erzwingende Test läuft erst in der CI
+  beim nächsten Push; ein Durchlauf steht aus. Auf dem Host danach mit
+  `journalctl _TRANSPORT="audit" -g 'apparmor="ALLOWED"'` prüfen, dann `complain` entfernen.
+- Testaufbau liegt jetzt in `tests/hostsim/run.sh` (siehe CLAUDE.md).
+- Karte: Keine OSM-Pipeline, Zoom 15 enthält alle Gebäude (Messung in TODO.md 2.4).
+
 ## Nächster Schritt
 
-1. Auf dem Host: Karten-Viewer über Ingress, Zimi über Port 8899, MCP über die Startseite,
-   Kolibri-Einrichtung mit den neuen Log-Meldungen, `hassio.addon_stdin`.
-2. Weiter offen: Integration (5), Ressourcen (2.7), Release (6), Renovate aktivieren (1).
+1. Renovate-Installation mit Passkey bestätigen; danach ggf. Onboarding-PR von Renovate.
+2. Push, dann CI-Job AppArmor ansehen.
+3. Auf dem Host: `place_search: true`, `channels` mit Khan Academy EN, Tests aus TODO.md.
+4. Integration (5), Ressourcen (2.7), Release (6).
 
 ## Wissen aus der Recherche
 

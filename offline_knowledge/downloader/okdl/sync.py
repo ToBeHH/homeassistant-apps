@@ -7,7 +7,7 @@ import os
 import shutil
 import time
 
-from . import catalog, fetch, maps, metalink, plan, selection
+from . import catalog, fetch, geocode, maps, metalink, plan, selection
 from .status import now
 
 log = logging.getLogger(__name__)
@@ -29,6 +29,7 @@ class Options:
         self.update_interval_days = max(1, int(raw.get("update_interval_days") or 7))
         self.map_regions = list(raw.get("map_regions") or [])
         self.map_update_days = int(raw.get("map_update_days") or 0)
+        self.place_search = bool(raw.get("place_search", False))
 
     @classmethod
     def load(cls, path):
@@ -171,6 +172,10 @@ def run(opts, status, sources):
             status.set(storage=storage_info(opts.data_path))
     else:
         log.info("Everything is up to date")
+
+    # After the maps: their files are what the street index is built from.
+    if opts.place_search and not geocode.update(opts, status, window):
+        ok = False
 
     status.set(
         state="idle",

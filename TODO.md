@@ -100,9 +100,14 @@ Legende: `[ ]` offen · `[x]` erledigt · `[?]` Entscheidung nötig
 - [x] Renovate-Konfiguration für Actions, Basis-Images und per `# renovate:`-Kommentar
       gepinnte Versionen (Zimi, CyberChef, pmtiles, MapLibre, Kolibri)
 - [ ] Renovate-App für das Repo aktivieren (manuell auf GitHub)
+      --> Entschieden: Renovate statt Dependabot, das unsere `ARG`-Pins nicht versteht.
+      Installation nur für dieses Repo vorbereitet, Passkey-Bestätigung steht aus.
 - [x] GHCR-Pakete nach dem ersten Build auf „public“ stellen (manuell auf GitHub),
       sonst kann Home Assistant die Images nicht laden
-- [ ] Optional: AppArmor-Profil je App
+- [x] AppArmor-Profil je App
+      --> `apparmor.txt` je App, vorerst `complain` (Verstöße werden nur geloggt). CI-Job
+      lädt sie im erzwingenden Modus und startet die App über `tests/hostsim`.
+- [ ] AppArmor scharf schalten: `complain` entfernen, sobald CI und ein echter Host sauber sind
 
 ## 2. Add-on „Offline Knowledge“
 
@@ -245,9 +250,15 @@ stündlich).
 - [x] Alle Kontinente in `regions.json`, Zoom 15 als Vorgabe (auch `europe`, vorher 14).
       Größen in DOCS.md. Viewer bis Zoom 20: Vektorkarten bleiben scharf, zeigen aber nicht
       mehr Objekte als bei 15. Höher gehen die Protomaps-Daten nicht.
-- [ ] Optional/später: Offline-Ortssuche (Geocoding)
-      Vorschlag: Stufe 1 GeoNames (Orte, PLZ) als SQLite-FTS5-Index, Stufe 2 Straßen und POIs
-      aus den eigenen PMTiles. Hausnummern nur mit Photon/Nominatim, zu schwer für den Host.
+- [x] Gebäude: direkt von OSM? --> Nicht nötig. Am Rathausmarkt zeigt eine Kachel in Zoom 15
+      936 Gebäude-Einträge (inkl. Teile, Hausnummern, Höhen), OSM dort 376 Gebäudeflächen.
+      Zoom 14 fasst sie zusammen (79 auf vierfacher Fläche); das war das Problem bei `europe`.
+- [x] Optional/später: Offline-Ortssuche (Geocoding)
+      --> `okdl/geocode.py`, `okdl/pmread.py`, Option `place_search` (Vorgabe aus).
+      `geonames.sqlite` (Orte, PLZ, 2,3 GB, nativ 3,5 min) und `map-<region>.sqlite` (Straßen,
+      POIs aus den PMTiles ab Zoom 13, ca. 440 Kacheln/s in dichter Stadt). Zeilen nach
+      Wichtigkeit gespeichert, Suche im echten Index meist unter 100 ms. Suchfeld im Viewer.
+      Hausnummern nicht: dafür Photon/Nominatim, zu schwer für den Host.
 
 ### 2.5 Startseite und Zugriff
 - [x] Landing-Page (nginx) mit Links zu Bibliothek, Karten, CyberChef und Status
@@ -286,7 +297,8 @@ stündlich).
       enthält auch `manage_collection`, `manage_favorites` und `build_index`.
 - [ ] Test mit Claude Desktop und Open WebUI
       (lokal getestet: echter MCP-Client aus dem `mcp`-Paket im Container)
-- [ ] Optional/später: Karten-Tool (Ortssuche), sobald Geocoding da ist
+- [x] Optional/später: Karten-Tool (Ortssuche), sobald Geocoding da ist
+      --> MCP-Tool `find_place`, in `full` und `lean`
 
 ### 2.7 Ressourcen
 - [ ] RAM/CPU im Leerlauf und bei Suche messen, Ergebnis in DOCS.md
@@ -322,8 +334,9 @@ stündlich).
       Bisher lokal, nur RAM: Kolibri ca. 95–125 MB, Import-Dienst ca. 20 MB.
 - [x] MCP gemäß D5 --> keins
 - [ ] Auf dem HA-Host testen, inklusive echtem Ingress und HTML5-Inhalten
-- [ ] Offen zu D9: Auf Studio gibt es keinen öffentlichen Kanal mit Hauptsprache Deutsch,
-      auch kein Khan Academy DE. Khan Academy EN (US) ist inzwischen 68 GB groß.
+- [x] D9: Auf Studio gibt es keinen öffentlichen Kanal mit Hauptsprache Deutsch, auch kein
+      Khan Academy DE. --> Entschieden: Khan Academy EN (US, 68 GB),
+      `c9d7f950ab6b5a1199e3d6c10d7f0103` in `channels` eintragen.
 
 ## 4. Update-Mechanismus
 

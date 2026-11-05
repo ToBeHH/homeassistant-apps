@@ -1,0 +1,39 @@
+#include <tunables/global>
+
+# complain: violations are only logged. Remove it once a real host shows none:
+# journalctl _TRANSPORT="audit" -g 'apparmor="ALLOWED"'
+profile offline_knowledge flags=(attach_disconnected,mediate_deleted,complain) {
+  #include <abstractions/base>
+
+  # What s6-overlay and the services need; everything else stays forbidden.
+  capability chown,
+  capability dac_override,
+  capability dac_read_search,
+  capability fowner,
+  capability fsetid,
+  capability kill,
+  capability setgid,
+  capability setuid,
+
+  network inet stream,
+  network inet dgram,
+  network inet6 stream,
+  network inet6 dgram,
+  network unix,
+  network netlink raw,
+  unix,
+  signal,
+
+  # All apps run from the container's own file system and the mapped folders.
+  file,
+  /** ix,
+
+  deny mount,
+  deny umount,
+  deny pivot_root,
+  deny ptrace,
+  deny network raw,
+  deny network packet,
+  deny @{PROC}/sys/** w,
+  deny /sys/** w,
+}

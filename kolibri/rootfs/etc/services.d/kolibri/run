@@ -28,13 +28,13 @@ if [[ -f "${marker}" ]]; then
 elif ! bashio::config.has_value 'admin_password'; then
     bashio::log.info "No admin_password set: Kolibri shows its setup wizard"
 else
-    bashio::log.info "Setting up Kolibri as $(bashio::config 'admin_username'), language $(bashio::config 'language')"
+    bashio::log.info "Setting up Kolibri as $(bashio::config 'admin_username' 'admin'), language $(bashio::config 'language' 'en')"
     if output=$(kolibri manage provisiondevice \
-        --facility "$(bashio::config 'facility_name')" \
-        --superusername "$(bashio::config 'admin_username')" \
+        --facility "$(bashio::config 'facility_name' 'Home')" \
+        --superusername "$(bashio::config 'admin_username' 'admin')" \
         --superuserpassword "$(bashio::config 'admin_password')" \
         --preset nonformal \
-        --language_id "$(bashio::config 'language')" \
+        --language_id "$(bashio::config 'language' 'en')" \
         --noinput 2>&1); then
         bashio::log.info "Setup finished"
         touch "${marker}"

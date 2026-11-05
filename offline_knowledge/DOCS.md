@@ -99,6 +99,22 @@ map download; the log says so, and the percentage stays at 0 until the map is fi
 Maps are not paused by `download_window` once they have started, and `download_limit`
 does not apply to them.
 
+### Place search
+
+With `place_search` on, the search field in the map viewer and the MCP tool `find_place` find
+places offline:
+
+- **Towns, regions, mountains, rivers, postal codes** worldwide, from
+  [GeoNames](https://www.geonames.org) (CC BY 4.0). The app downloads about 450 MB once and
+  renews them every `map_update_days` days. The index takes about 2.5 GB.
+- **Streets and points of interest** from your map regions at zoom 13 or above, each with the
+  nearest town, so you can search for `Hauptstraße Kiel`. House numbers can't be searched.
+
+Building the index from a map takes time, because every tile is read: under an hour
+for `germany`, about half a day for `europe`. It runs with low priority after the downloads,
+and starts over if the app restarts; the progress is on the start page. The index for a map is
+rebuilt when the map is renewed.
+
 ## CyberChef
 
 [CyberChef](https://github.com/gchq/CyberChef) runs completely in your browser and is
@@ -126,7 +142,7 @@ The app creates the token itself. **Recreate token** on the start page replaces 
 connected assistants then need the new one. Without a host port the MCP server does not run.
 
 `mcp_tools` selects the tools. `lean` offers `search`, `read` and `read_section`, which
-suits small models. `full` (default) offers all of Zimi's tools, including some that
+suits small models. `find_place` is always there. `full` (default) offers all of Zimi's tools, including some that
 change the library's collections and favorites (`manage_collection`,
 `manage_favorites`) or start index builds (`build_index`).
 
@@ -147,6 +163,7 @@ a minute after they arrive.
 | `download_limit` | Maximum download speed in KB/s, `0` for no limit. Library downloads only. |
 | `map_regions` | Map regions, see [Maps](#maps). Default: `world`. |
 | `map_update_days` | Renew maps after this many days, `0` for never. |
+| `place_search` | Offline place search, see [Place search](#place-search). Default: off. |
 | `mcp_tools` | `full` or `lean`, see [MCP endpoint](#mcp-endpoint). |
 
 ## Access

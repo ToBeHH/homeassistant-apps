@@ -8,6 +8,7 @@ import os
 import secrets
 import threading
 import time
+import urllib.parse
 
 log = logging.getLogger(__name__)
 
@@ -54,8 +55,9 @@ def wait_for_update(state_dir, seconds, poll=5):
         time.sleep(min(poll, left))
 
 
-def serve(state_dir, token_file, port=PORT):
-    """Start the API in the background; returns the server."""
+def serve(state_dir, token_file, port=PORT, places=None):
+    """Start the API in the background; returns the server. places(query) is
+    the place search."""
 
     class Handler(http.server.BaseHTTPRequestHandler):
         def log_message(self, *args):
@@ -71,8 +73,12 @@ def serve(state_dir, token_file, port=PORT):
             self.wfile.write(body)
 
         def do_GET(self):
-            if self.path == "/mcp-token":
+            url = urllib.parse.urlsplit(self.path)
+            if url.path == "/mcp-token":
                 self.answer(200, {"token": read_token(token_file)})
+            elif url.path == "/places" and places:
+                query = urllib.parse.parse_qs(url.query).get("q", [""])[0]
+                self.answer(200, {"results": places(query)})
             else:
                 self.answer(404, {"error": "not found"})
 

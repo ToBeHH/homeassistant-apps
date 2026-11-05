@@ -45,6 +45,49 @@ body {
   max-width: calc(100vw - 80px);
 }
 
+#search-box { position: relative; }
+#search {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font: inherit;
+  width: min(280px, calc(100vw - 80px));
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  box-sizing: border-box;
+}
+.bar { flex-wrap: wrap; max-width: calc(100vw - 70px); }
+#results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: min(360px, calc(100vw - 70px));
+  max-height: 60vh;
+  overflow-y: auto;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+#results button {
+  display: block;
+  width: 100%;
+  padding: 6px 10px;
+  border: 0;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+#results button:hover, #results button:focus { background: var(--line); }
+#results small, #results .note { color: var(--muted); font-size: 12px; }
+#results .note { padding: 6px 10px; }
+
 .empty {
   position: absolute;
   inset: 0;

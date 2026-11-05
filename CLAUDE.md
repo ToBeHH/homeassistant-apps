@@ -39,6 +39,9 @@ items off there. Current state and next steps: **[HANDOFF.md](HANDOFF.md)**.
 - Pin third-party versions as `ARG <NAME>_VERSION=…` with a `# renovate: datasource=… depName=…`
   comment on the line above, so Renovate can update them.
 - Only `amd64` for now (decision D8).
+- New options must be optional in `schema` (`int?`, `bool?`, ...), with the default in `options`
+  and in the code. A required one makes saving fail for everyone with an older saved
+  configuration ("Missing option ...").
 - Profile values are English: `slim`, `standard`, `full`, `custom`.
 
 ## Checks (CI runs the same)
@@ -52,9 +55,15 @@ docker build -t test/offline_knowledge ./offline_knowledge
 
 The app linter (`frenck/action-addon-linter`) only runs in CI.
 
+`tests/hostsim/run.sh <app> <image> [apparmor profile]` starts an image with its real s6 init
+and bashio next to a fake Supervisor and ingress proxy, the closest thing to a Home Assistant
+host. Python tests: `python -m unittest discover -t . -s tests` in `offline_knowledge/downloader`,
+`offline_knowledge/mcp_server` and `kolibri/channel_sync`.
+
 ## CI / release
 
-- `.github/workflows/lint.yaml` – app linter, hadolint, yamllint, shellcheck
+- `.github/workflows/lint.yaml` – app linter, hadolint, yamllint, shellcheck, Python tests,
+  AppArmor (each app under its profile in enforce mode, through `tests/hostsim`)
 - `.github/workflows/builder.yaml` + `build-app.yaml` – build changed apps on PRs, build and
   publish to GHCR on push to `main` (`ghcr.io/tobehh/ha-app-<name>`), using
   `home-assistant/builder/actions/*`

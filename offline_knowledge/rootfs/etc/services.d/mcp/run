@@ -15,7 +15,7 @@ fi
 # shellcheck source=/dev/null
 source /usr/local/share/offline_knowledge/zimi-env.sh
 
-bashio::log.info "Starting MCP server on port 8900, tools: $(bashio::config 'mcp_tools')"
+bashio::log.info "Starting MCP server on port 8900, tools: $(bashio::config 'mcp_tools' 'full')"
 cd "${ZIMI_DATA_DIR}" || bashio::exit.nok "Cannot enter ${ZIMI_DATA_DIR}"
 export PYTHONPATH=/opt/okdl
 export PYTHONUNBUFFERED=1

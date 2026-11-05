@@ -88,4 +88,91 @@ if (!regions.length) {
     map.setStyle(style(current));
     map.fitBounds(current.bbox, { animate: false });
   });
+
+  // --- Place search ------------------------------------------------------------
+
+  const ZOOM = { region: 7, place: 12, postcode: 13, water: 11, mountain: 13, road: 16 };
+  const input = document.getElementById("search");
+  const list = document.getElementById("results");
+  let marker = null;
+  let timer = null;
+  let asked = 0;
+
+  const covers = (r, lat, lon) =>
+    lon >= r.bbox[0] && lon <= r.bbox[2] && lat >= r.bbox[1] && lat <= r.bbox[3];
+
+  function note(text) {
+    const li = document.createElement("li");
+    li.className = "note";
+    li.textContent = text;
+    list.append(li);
+  }
+
+  function go(hit) {
+    list.hidden = true;
+    if (!covers(current, hit.lat, hit.lon)) {
+      const region = regions.find((r) => covers(r, hit.lat, hit.lon));
+      if (!region) {
+        list.hidden = false;
+        list.replaceChildren();
+        note(`${hit.name} is outside your map regions.`);
+        return;
+      }
+      current = region;
+      select.value = region.label;
+      remember(region.label);
+      map.setStyle(style(region));
+    }
+    if (marker) marker.remove();
+    marker = new maplibregl.Marker().setLngLat([hit.lon, hit.lat]).addTo(map);
+    map.jumpTo({ center: [hit.lon, hit.lat], zoom: ZOOM[hit.kind] || 17 });
+  }
+
+  async function find(query) {
+    const ticket = ++asked;
+    let hits = [];
+    let failed = false;
+    try {
+      const r = await fetch(`../control/places?q=${encodeURIComponent(query)}`);
+      hits = (await r.json()).results;
+    } catch {
+      failed = true;
+    }
+    if (ticket !== asked) return;
+    list.replaceChildren();
+    for (const hit of hits) {
+      const b = document.createElement("button");
+      b.type = "button";
+      const where = [hit.kind, hit.near, hit.country].filter(Boolean).join(", ");
+      const small = document.createElement("small");
+      small.textContent = where;
+      b.append(hit.name, document.createElement("br"), small);
+      b.addEventListener("click", () => go(hit));
+      const li = document.createElement("li");
+      li.append(b);
+      list.append(li);
+    }
+    if (failed) note("The search is not available right now.");
+    else if (!hits.length) note("Nothing found. Is place_search on in the app configuration?");
+    else note("Places: GeoNames (CC BY 4.0), streets: OpenStreetMap");
+    list.hidden = false;
+  }
+
+  input.addEventListener("input", () => {
+    clearTimeout(timer);
+    const query = input.value.trim();
+    if (query.length < 2) {
+      asked++;
+      list.hidden = true;
+      return;
+    }
+    timer = setTimeout(() => find(query), 250);
+  });
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") list.hidden = true;
+    if (e.key === "Enter") {
+      const first = list.querySelector("button");
+      if (first) first.click();
+    }
+  });
 }

@@ -49,6 +49,11 @@ configuration:
     description: >-
       full bietet alle Werkzeuge, lean nur search, read und read_section (für kleine
       Modelle).
+  place_search:
+    name: Ortssuche
+    description: >-
+      Suche nach Orten im Karten-Viewer und über MCP. Lädt etwa 450 MB von GeoNames und baut
+      einen Suchindex, was bei großen Kartenregionen Stunden dauern kann.
 network:
   8899/tcp: >-
     Weboberfläche der Bibliothek. Standardmäßig aus; nur in einem vertrauenswürdigen

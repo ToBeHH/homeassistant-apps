@@ -91,6 +91,38 @@ jobs:
         working-directory: kolibri/channel_sync
         run: python -m unittest discover -t . -s tests -v
 
+  apparmor:
+    name: AppArmor ${{ matrix.path }}
+    runs-on: ubuntu-latest
+    needs: find
+    strategy:
+      fail-fast: false
+      matrix:
+        path: ${{ fromJson(needs.find.outputs.addons) }}
+    steps:
+      - name: ⤵️ Check out code from GitHub
+        uses: actions/checkout@v7.0.1
+
+      - name: 🔒 Load the profile in enforce mode
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq apparmor-utils
+          sed 's/,complain)/)/' "${{ matrix.path }}/apparmor.txt" > profile.txt
+          sudo apparmor_parser -r -W profile.txt
+
+      - name: 🏗 Build the image
+        run: docker build -t hostsim/app "./${{ matrix.path }}"
+
+      - name: 🚀 Run the app under the profile
+        run: tests/hostsim/run.sh "${{ matrix.path }}" hostsim/app "${{ matrix.path }}"
+
+      - name: 🔍 Look for AppArmor denials
+        if: always()
+        run: |
+          if sudo journalctl -k --no-pager | grep -F 'apparmor="DENIED"' | grep -F "${{ matrix.path }}"; then
+            exit 1
+          fi
+
   shellcheck:
     name: ShellCheck
     runs-on: ubuntu-latest
@@ -99,4 +131,6 @@ jobs:
         uses: actions/checkout@v7.0.1
 
       - name: 🚀 Run ShellCheck on service scripts
-        run: find . -path '*/rootfs/etc/services.d/*' -type f -print0 | xargs -0 shellcheck -x
+        run: |
+          find . -path '*/rootfs/etc/services.d/*' -type f -print0 | xargs -0 shellcheck -x
+          shellcheck -x tests/hostsim/run.sh

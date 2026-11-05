@@ -1,0 +1,3 @@
+{"name": "Kolibri", "slug": "kolibri", "version": "sim",
+ "ingress_entry": "/api/hassio_ingress/TOK",
+ "network": {"8080/tcp": null, "8081/tcp": null}}

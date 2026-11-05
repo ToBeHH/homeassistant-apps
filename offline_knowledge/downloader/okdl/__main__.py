@@ -8,7 +8,7 @@ import sys
 import time
 import urllib.request
 
-from . import catalog, control, maps, sync
+from . import catalog, control, geocode, maps, sync
 from .status import Status
 
 DAY = 24 * 3600
@@ -47,6 +47,8 @@ def main(argv=None):
         stream=sys.stdout,
     )
     log = logging.getLogger("okdl")
+    # Indexing runs for hours. It must not slow down the library or the maps.
+    os.nice(10)
     os.makedirs(args.state_dir, exist_ok=True)
     status = Status(os.path.join(args.state_dir, "status.json"))
     sources = sync.Sources(
@@ -56,7 +58,10 @@ def main(argv=None):
     )
     if not args.once:
         # Up first: the start page needs it while the library is still loading.
-        control.serve(args.state_dir, args.token_file, args.control_port)
+        def places(query):
+            return geocode.search(query, sync.Options.load(args.options).data_path)
+
+        control.serve(args.state_dir, args.token_file, args.control_port, places=places)
     if args.wait_for:
         log.info("Waiting for the library server")
         wait_for_library(args.wait_for)
