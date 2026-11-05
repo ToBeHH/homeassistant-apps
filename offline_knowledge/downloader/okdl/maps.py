@@ -227,6 +227,13 @@ def parse_dry_run(output):
     return int(float(m.group(1)) * _UNITS[m.group(2)])
 
 
+def written_bytes(path):
+    """Bytes actually on disk. pmtiles creates its output at full size up
+    front, so the file size says nothing about the progress."""
+    st = os.stat(path)
+    return min(st.st_size, st.st_blocks * 512)
+
+
 class Extractor:
     def __init__(self, command=(PMTILES,), threads=4, poll=5):
         self.command = list(command)
@@ -270,13 +277,23 @@ class Extractor:
             stderr=subprocess.PIPE,
             text=True,
         )
+        measurable = None
         while proc.poll() is None:
             time.sleep(self.poll)
-            if progress and os.path.exists(part):
-                progress(os.path.getsize(part))
+            if not progress or not os.path.exists(part):
+                continue
+            written = written_bytes(part)
+            if measurable is None:
+                # Some file systems (e.g. exFAT) allocate everything at once.
+                measurable = written < 0.9 * os.path.getsize(part)
+                if not measurable:
+                    log.info("%s: progress can't be measured on this file system", region.label)
+            if measurable:
+                progress(written)
         _, err = proc.communicate()
         if proc.returncode != 0:
             raise ExtractError(f"pmtiles extract failed ({proc.returncode}): {err.strip()[-300:]}")
+        log.info("Map %s downloaded, verifying", region.label)
         res = subprocess.run(self.command + ["verify", part], capture_output=True, text=True)
         if res.returncode != 0:
             raise ExtractError(f"pmtiles verify failed: {(res.stdout + res.stderr).strip()[-300:]}")

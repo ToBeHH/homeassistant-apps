@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.1
+
+- Map downloads show their real progress. They showed 100 % right from the start,
+  because `pmtiles` creates the file at full size up front.
+
 ## 0.5.0
 
 - MCP endpoint: AI assistants can search and read the library at port 8900, path `/mcp`

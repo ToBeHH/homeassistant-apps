@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.1
+
+- The log says whether the first setup ran, failed or was skipped, and why.
+- No more nginx errors in the log while Kolibri is starting.
+
 ## 0.1.0
 
 - Kolibri 0.19.5, available in the Home Assistant sidebar (ingress) and optionally on

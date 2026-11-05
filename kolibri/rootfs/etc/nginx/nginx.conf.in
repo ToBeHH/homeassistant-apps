@@ -2,7 +2,8 @@
 # everything below that prefix; Home Assistant's ingress proxy strips it.
 worker_processes 1;
 pid /run/nginx.pid;
-error_log /dev/stderr warn;
+# Not "error": it would log every health check while Kolibri is still starting.
+error_log /dev/stderr crit;
 
 events {
     worker_connections 256;

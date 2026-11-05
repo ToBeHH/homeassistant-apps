@@ -22,19 +22,27 @@ else
     bashio::log.info "Storage location: ${data_path}"
 fi
 
-# First start only. Without a password Kolibri shows its setup wizard instead.
-if [[ ! -f "${marker}" ]] && bashio::config.has_value 'admin_password'; then
-    bashio::log.info "Setting up Kolibri"
+# First setup only. Without a password Kolibri shows its setup wizard instead.
+if [[ -f "${marker}" ]]; then
+    bashio::log.info "Kolibri is set up; facility, admin and language options are not used anymore"
+elif ! bashio::config.has_value 'admin_password'; then
+    bashio::log.info "No admin_password set: Kolibri shows its setup wizard"
+else
+    bashio::log.info "Setting up Kolibri as $(bashio::config 'admin_username'), language $(bashio::config 'language')"
     if output=$(kolibri manage provisiondevice \
         --facility "$(bashio::config 'facility_name')" \
         --superusername "$(bashio::config 'admin_username')" \
         --superuserpassword "$(bashio::config 'admin_password')" \
         --preset nonformal \
         --language_id "$(bashio::config 'language')" \
-        --noinput 2>&1) || [[ "${output}" == *DeviceAlreadyProvisioned* ]]; then
+        --noinput 2>&1); then
+        bashio::log.info "Setup finished"
+        touch "${marker}"
+    elif [[ "${output}" == *DeviceAlreadyProvisioned* ]]; then
+        bashio::log.warning "Kolibri was already set up in its wizard; facility, admin and language options are not used"
         touch "${marker}"
     else
-        bashio::log.warning "Setup failed, Kolibri will show its setup wizard:"
+        bashio::log.warning "Setup failed, Kolibri shows its setup wizard:"
         bashio::log.warning "$(tail -n 3 <<< "${output}")"
     fi
 fi

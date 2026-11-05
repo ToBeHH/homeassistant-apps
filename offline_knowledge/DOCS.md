@@ -65,6 +65,9 @@ shown under **Open maps** on the start page.
 | `germany:12` | any of the above with a lower maximum zoom; each level less roughly halves the size | |
 | `home=9.7,53.4,10.3,53.7:15` | your own area: name, then min_lon,min_lat,max_lon,max_lat and optionally the zoom (default 14) | |
 
+Some file systems of external drives (e.g. exFAT) don't allow measuring the progress of a
+map download; the log says so, and the percentage stays at 0 until the map is finished.
+
 `map_update_days` (default 30) renews a map once it is that old and a newer build exists;
 `0` keeps maps as they are. A renewed map replaces the old one only when it is complete.
 

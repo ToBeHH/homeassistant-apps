@@ -8,7 +8,9 @@ progress tracking, without an internet connection.
 
 1. Create a folder with enough free space and set it as **Storage location** (`data_path`).
 2. Set `admin_password` for the first setup, or leave it empty and use Kolibri's setup
-   wizard.
+   wizard. If you set it later, save and restart the app before finishing the wizard. Once
+   Kolibri is set up, `facility_name`, `admin_username`, `admin_password` and `language` have
+   no effect anymore; change these in Kolibri itself.
 3. Add channel IDs to `channels` and start the app.
 4. Open Kolibri from the sidebar. For games and simulations also set a host port for
    `8081/tcp` under **Network**, see [Access](#access).
@@ -61,7 +63,8 @@ Removing an ID from `channels` does not delete the channel. Use
 - **Local network:** set a host port for `8080/tcp` under **Network**. Learners can then
   open Kolibri without a Home Assistant account, using `http://<host>:<port>/`.
 - **HTML5 content:** games and simulations load from a second address, directly from the
-  browser. Set a host port for `8081/tcp` under **Network**, not 8080, 8099 or 18080.
+  browser. Set a host port for `8081/tcp` under **Network**. Any free port works, e.g. 8085,
+  except 8080, 8099 and 18080.
   Videos and exercises work without it.
 
 If you reach Home Assistant through HTTPS, browsers block HTML5 content from the plain HTTP

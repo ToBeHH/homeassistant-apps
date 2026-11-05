@@ -123,6 +123,25 @@ class ExtractorTest(unittest.TestCase):
             self.assertIsNone(ex.dry_run("u", REGIONS["world"]))
 
 
+class WrittenBytesTest(unittest.TestCase):
+    def test_counts_data_not_the_preallocated_size(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "x.part")
+            with open(path, "wb") as f:
+                f.truncate(10_000_000)
+            sparse = os.stat(path).st_blocks * 512 < 10_000_000
+            if not sparse:
+                self.skipTest("file system does not support sparse files")
+            self.assertLess(maps.written_bytes(path), 1_000_000)
+            with open(path, "r+b") as f:
+                f.write(b"x" * 4_000_000)
+                f.flush()
+                os.fsync(f.fileno())
+            written = maps.written_bytes(path)
+            self.assertGreaterEqual(written, 4_000_000)
+            self.assertLess(written, 5_000_000)
+
+
 class SyncMapsTest(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
