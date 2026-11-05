@@ -60,8 +60,10 @@ logs() {
 deadline=$((SECONDS + timeout))
 while :; do
     missing=0
+    # Not "logs | grep -q": with pipefail the pipe breaks as soon as grep has its match.
+    current=$(logs)
     while IFS= read -r line; do
-        logs | grep -qF "${line}" || missing=1
+        grep -qF "${line}" <<< "${current}" || missing=1
     done < "${here}/${app}/expect.txt"
     if [[ "${missing}" == 0 ]]; then
         break
