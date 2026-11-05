@@ -1,4 +1,4 @@
-# Handoff – Stand 24.10.2026 (nach Phase 2.4)
+# Handoff – Stand 05.11.2026 (nach Phase 2.4 und erstem Test auf dem HA-Host)
 
 Übergabe aus der Claude-Chat-Sitzung an die Weiterarbeit in VS Code (mit Claude Code).
 Projektregeln stehen in [CLAUDE.md](CLAUDE.md), der Plan in [TODO.md](TODO.md).
@@ -83,17 +83,23 @@ Entscheidung: **HA-Base-Image + Zimi per pip** (Details in TODO.md 2.1).
   in der Seitenleiste leer bleibt, ist das die erste Stelle zum Nachsehen.
 - Entscheidung: kein Zimi-Login, Bibliothek nur im lokalen Netz.
 
-## Nächster Schritt: Test auf dem HA-Host, dann 2.6 (MCP)
+## Test auf dem HA-Host (0.4.0)
 
-1. Repo in HA hinzufügen, App installieren (Image 0.4.0).
-2. `data_path` auf einen existierenden Ordner (z. B. externe Platte unter `/media/…`),
-   Profil `custom`, `zim_sources: [devdocs_en_bash]`, `map_regions: [world]`, unter
-   Netzwerk einen Port für 8899 setzen.
-3. Prüfen: Startseite in der Seitenleiste, „Open maps“ (Karte über Ingress!),
-   „Open CyberChef“, „Open library“, Log der drei Dienste, Healthcheck.
-4. Danach eigener Betrieb: Profil `full`, `de` + `en`, Karten z. B. `dach` oder `europe`.
+Getestet: Installation aus dem Repo, Status „healthy“; ohne Speicherort kein Download;
+kleiner Test (eine ZIM-Datei + Weltkarte), Zimi übernimmt nach ca. 40 s, Suche geht;
+Kacheln werden in Teilstücken ausgeliefert; `prune` wirkt. RAM siehe TODO 2.7.
 
-Offen danach: MCP (2.6), `addon_stdin` für manuelles Update (4), Ressourcen messen (2.7).
+Gelernt:
+- Der Container heißt jetzt `app_<slug>` statt `addon_<slug>` (wichtig fürs Debugging).
+- `finish`-Skripte loggen in UTC, die übrigen Meldungen in Ortszeit (nur kosmetisch,
+  nicht geändert).
+
+## Nächster Schritt
+
+1. Im Browser prüfen: Startseite und Karten-Viewer über Ingress, Zimi über Port 8899.
+   Bleibt die Karte über Ingress leer, zuerst die Range-Anfragen durch den Proxy ansehen.
+2. Danach MCP (2.6). Weiter offen: `addon_stdin` für manuelles Update (4), Ressourcen
+   messen (2.7).
 
 ## Wissen aus der Recherche
 

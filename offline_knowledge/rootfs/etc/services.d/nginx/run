@@ -8,14 +8,14 @@ declare library_port
 declare data_path
 
 # The host port for Zimi, if the user opened one under Network.
-library_port=$(bashio::addon.port "8899/tcp")
+library_port=$(bashio::app.port "8899/tcp")
 if ! bashio::var.has_value "${library_port}" || [[ "${library_port}" == "null" ]]; then
     library_port=null
 fi
 
 mkdir -p /run/landing
 jq -n \
-    --arg version "$(bashio::addon.version)" \
+    --arg version "$(bashio::app.version)" \
     --argjson library_port "${library_port}" \
     '{version: $version, library_port: $library_port}' \
     > /run/landing/info.json

@@ -130,8 +130,12 @@ Legende: `[ ]` offen · `[x]` erledigt · `[?]` Entscheidung nötig
 - [x] Watchdog/Healthcheck (Zimi `/health`)
       --> Docker-`HEALTHCHECK` im Dockerfile (der App-Linter lehnt `watchdog` als
       veraltet ab)
-- [ ] Auf echtem HA-Host testen (bashio/Supervisor-API und Watchdog lassen sich lokal
+- [x] Auf echtem HA-Host testen (bashio/Supervisor-API und Watchdog lassen sich lokal
       nicht prüfen; lokal getestet: Build, `/health`, Suche, Start ohne Netzwerk)
+      --> 0.4.0 aus dem Repo installiert: Status „healthy“; ohne Speicherort kein
+      Download, Hinweis in Log und auf der Startseite; `prune` entfernt abgewählte Datei.
+- [ ] Im Browser prüfen: Startseite und Karten-Viewer über Ingress (Range-Anfragen durch
+      den Ingress-Proxy), Zimi über Port 8899 im LAN
 
 ### 2.2 Bibliothek (Zimi)
 - [x] `ZIM_DIR` → `<data_path>/zim`, `ZIMI_DATA_DIR` → persistenter Pfad
@@ -269,6 +273,8 @@ stündlich).
 
 ### 2.7 Ressourcen
 - [ ] RAM/CPU im Leerlauf und bei Suche messen, Ergebnis in DOCS.md
+      Bisher auf dem HA-Host (0.4.0), nur RAM: 61 MB leer, 80 MB mit Inhalten, 94 MB beim
+      Laden. Es fehlen CPU und der Wert bei der Suche mit der großen Bibliothek.
 
 ## 3. Add-on „Kolibri“
 
@@ -308,7 +314,9 @@ Drei Ebenen, getrennt behandelt:
 ## 6. Test und Release
 
 - [ ] Lokaler Test als lokales Add-on (`/addons`) auf dem HA-Host – erst nach Freigabe
-- [ ] Erst mit kleinem ZIM testen, dann große Inhalte laden
+- [x] Erst mit kleinem ZIM testen, dann große Inhalte laden
+      --> Eine ZIM-Datei + Weltkarte: geladen, geprüft, Zimi übernimmt nach ca. 40 s
+      ohne Neustart, Suche funktioniert.
 - [ ] Umzug der Inhalte auf die externe Platte testen (D6)
 - [ ] DOCS.md (Englisch) je Add-on, README aktualisieren
 - [ ] Release v0.1.0

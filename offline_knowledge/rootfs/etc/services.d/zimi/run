@@ -9,7 +9,7 @@ declare zim_dir=""
 
 data_path=$(bashio::config 'data_path')
 
-bashio::log.info "Offline Knowledge $(bashio::addon.version) starting"
+bashio::log.info "Offline Knowledge $(bashio::app.version) starting"
 bashio::log.info "Profile: $(bashio::config 'profile'), languages: $(bashio::config 'languages' | tr '\n' ' ')"
 
 # No storage, no content (D6): Zimi still starts, but with an empty library.

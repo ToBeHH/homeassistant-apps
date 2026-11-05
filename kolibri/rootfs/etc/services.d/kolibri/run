@@ -7,7 +7,7 @@
 declare data_path
 data_path=$(bashio::config 'data_path')
 
-bashio::log.info "Kolibri app $(bashio::addon.version) starting"
+bashio::log.info "Kolibri app $(bashio::app.version) starting"
 
 if bashio::var.is_empty "${data_path}"; then
     bashio::log.warning "No data_path configured. Nothing will be downloaded until a storage location is set."

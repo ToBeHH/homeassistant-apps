@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.1
+
+- Removed WikEM from the `full` profile; it is no longer in the Kiwix catalog.
+- Use `bashio::app.*` instead of the deprecated `bashio::addon.*` functions.
+- The downloader's user agent reports the current app version.
+
 ## 0.4.0
 
 - Offline maps: regions are cut out of the current Protomaps planet build with

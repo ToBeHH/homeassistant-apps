@@ -39,7 +39,7 @@ What each profile contains is defined per language in
 | --- | --- | --- | --- |
 | `slim` | Wikipedia without pictures, Wiktionary, Wikivoyage (about 20 GB) | Wikipedia intro sections only, Wiktionary, Wikivoyage, WikiMed (about 25 GB) | Wikipedia intros, Wiktionary, Wikivoyage |
 | `standard` | Wikipedia with pictures, Wiktionary, Wikivoyage, Wikibooks, iFixit (about 58 GB) | Wikipedia without pictures, Wiktionary, Wikivoyage, Wikibooks, WikiMed, iFixit (about 72 GB) | Wikipedia without pictures, Wiktionary, Wikivoyage |
-| `full` | `standard` plus Wikiquote, Wikisource, Wikiversity, Project Gutenberg (about 73 GB) | Wikipedia with pictures, Wiktionary, Wikivoyage, Wikibooks, Wikiquote, WikiMed, WikEM, iFixit (about 150 GB) | Wikipedia with pictures, Wiktionary, Wikivoyage |
+| `full` | `standard` plus Wikiquote, Wikisource, Wikiversity, Project Gutenberg (about 73 GB) | Wikipedia with pictures, Wiktionary, Wikivoyage, Wikibooks, Wikiquote, WikiMed, iFixit (about 150 GB) | Wikipedia with pictures, Wiktionary, Wikivoyage |
 | `custom` | only `zim_sources` | | |
 
 Sizes as of October 2026. Sources a language does not have are skipped (see the log).
