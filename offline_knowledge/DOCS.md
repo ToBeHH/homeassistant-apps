@@ -203,4 +203,4 @@ OpenStreetMap (ODbL).
 ## Support
 
 <p align="center">If you love my work, please</p>
-<p><a href="https://www.buymeacoffee.com/ToBeHH" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a></p>
+<p><a href="https://www.buymeacoffee.com/ToBeHH" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee"  height="52" width="185" ></a></p>

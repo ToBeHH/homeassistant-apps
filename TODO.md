@@ -295,7 +295,7 @@ stündlich).
       `deep_search`, …
       --> Option `mcp_tools`: `full` (Vorgabe, 19 Tools) oder `lean` (3 Tools). `full`
       enthält auch `manage_collection`, `manage_favorites` und `build_index`.
-- [ ] Test mit Claude Desktop und Open WebUI
+- [x] Test mit Claude Desktop und Open WebUI
       (lokal getestet: echter MCP-Client aus dem `mcp`-Paket im Container)
 - [x] Optional/später: Karten-Tool (Ortssuche), sobald Geocoding da ist
       --> MCP-Tool `find_place`, in `full` und `lean`
@@ -369,8 +369,8 @@ Drei Ebenen, getrennt behandelt:
 
 ## 5. Integration
 
-- [ ] MCP-Endpunkt in Claude Desktop eintragen (Zugriff über VPN, nicht öffentlich)
-- [ ] MCP in Open WebUI als Tool anbinden
+- [x] MCP-Endpunkt in Claude Desktop eintragen (Zugriff über VPN, nicht öffentlich)
+- [x] MCP in Open WebUI als Tool anbinden
 - [ ] Optional: HA-Sensoren (Speicher, letzte Aktualisierung) und Dashboard-Link
 
 ## 6. Test und Release
