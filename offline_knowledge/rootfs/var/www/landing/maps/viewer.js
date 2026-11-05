@@ -75,7 +75,7 @@ if (!regions.length) {
     container: "map",
     style: style(current),
     bounds: current.bbox,
-    maxZoom: 19,
+    maxZoom: 20,
     hash: true,
     attributionControl: { compact: true },
   });

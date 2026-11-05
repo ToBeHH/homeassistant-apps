@@ -100,7 +100,7 @@ Legende: `[ ]` offen · `[x]` erledigt · `[?]` Entscheidung nötig
 - [x] Renovate-Konfiguration für Actions, Basis-Images und per `# renovate:`-Kommentar
       gepinnte Versionen (Zimi, CyberChef, pmtiles, MapLibre, Kolibri)
 - [ ] Renovate-App für das Repo aktivieren (manuell auf GitHub)
-- [ ] GHCR-Pakete nach dem ersten Build auf „public“ stellen (manuell auf GitHub),
+- [x] GHCR-Pakete nach dem ersten Build auf „public“ stellen (manuell auf GitHub),
       sonst kann Home Assistant die Images nicht laden
 - [ ] Optional: AppArmor-Profil je App
 
@@ -208,7 +208,7 @@ stündlich).
 - [x] Unit-Tests für Katalog-Auflösung und Abgleich
       --> 41 Tests inkl. lokalem HTTP-Server mit Range (Fortsetzen, Mirror-Wechsel,
       Prüfsumme, Zeitfenster, Platzmangel, kein Speicherort → keine Anfrage)
-- [ ] Manuelles Auslösen per `hassio.addon_stdin` (siehe Abschnitt 4)
+- [x] Manuelles Auslösen per `hassio.addon_stdin` (siehe Abschnitt 4)
 
 ### 2.3 CyberChef
 - [x] Release-ZIP beim Image-Build laden (Version gepinnt, Prüfsumme)
@@ -242,7 +242,12 @@ stündlich).
 - [x] Mehrere Regionen im Viewer umschaltbar
       --> Auswahlfeld, detaillierteste Region zuerst, letzte Wahl gemerkt
 - [ ] Viewer: Welt-Übersicht unter Detailregionen legen (jetzt immer nur eine Quelle)
+- [x] Alle Kontinente in `regions.json`, Zoom 15 als Vorgabe (auch `europe`, vorher 14).
+      Größen in DOCS.md. Viewer bis Zoom 20: Vektorkarten bleiben scharf, zeigen aber nicht
+      mehr Objekte als bei 15. Höher gehen die Protomaps-Daten nicht.
 - [ ] Optional/später: Offline-Ortssuche (Geocoding)
+      Vorschlag: Stufe 1 GeoNames (Orte, PLZ) als SQLite-FTS5-Index, Stufe 2 Straßen und POIs
+      aus den eigenen PMTiles. Hausnummern nur mit Photon/Nominatim, zu schwer für den Host.
 
 ### 2.5 Startseite und Zugriff
 - [x] Landing-Page (nginx) mit Links zu Bibliothek, Karten, CyberChef und Status

@@ -36,8 +36,9 @@ configuration:
   map_regions:
     name: Map regions
     description: >-
-      Regions for offline maps: world (overview), germany, dach, europe, optionally
-      with a maximum zoom such as germany:12, or your own area as
+      Regions for offline maps: world (overview), germany, dach, africa, antarctica, asia,
+      europe, north_america, oceania, south_america, optionally with a maximum zoom such as
+      germany:12, or your own area as
       name=min_lon,min_lat,max_lon,max_lat[:zoom].
   map_update_days:
     name: Map update interval

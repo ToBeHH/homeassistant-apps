@@ -5,7 +5,7 @@ sources, using the Kiwix OPDS catalog. Independent of the library server: it
 only writes ZIM files into a folder.
 """
 
-__version__ = "0.6.0"
+__version__ = "0.6.1"
 
 USER_AGENT = (
     f"offline-knowledge-ha-app/{__version__} "

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.1
+
+- New map regions for all continents: `africa`, `antarctica`, `asia`, `north_america`,
+  `oceania`, `south_america`.
+- `europe` now uses zoom 15 (49 GB) instead of 14 (25 GB), like the other regions. An
+  existing Europe map is downloaded again; use `europe:14` to keep it.
+- The map viewer zooms to level 20.
+
 ## 0.6.0
 
 - The MCP token is now created by the app. The start page shows it with the address, can

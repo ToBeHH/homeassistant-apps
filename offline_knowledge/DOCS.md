@@ -66,14 +66,29 @@ Maps are cut out of the [Protomaps](https://protomaps.com) planet build (OpenStr
 data); only the selected area is downloaded. They are stored in `<data_path>/maps` and
 shown under **Open maps** on the start page.
 
-| `map_regions` entry | Area | Size (10/2026) |
+| `map_regions` entry | Area | Size (11/2026) |
 | --- | --- | --- |
 | `world` | whole world, zoom 0–6 (countries, big cities, main roads) | 45 MB |
-| `germany` | Germany, full detail (zoom 15) | 7.4 GB |
-| `dach` | Germany, Austria, Switzerland, full detail | 10 GB |
-| `europe` | Europe, zoom 14 | 25 GB |
-| `germany:12` | any of the above with a lower maximum zoom; each level less roughly halves the size | |
+| `germany` | Germany | 7.4 GB |
+| `dach` | Germany, Austria, Switzerland | 10 GB |
+| `africa` | Africa | 15 GB |
+| `antarctica` | Antarctica | 0.4 GB |
+| `asia` | Asia | 45 GB |
+| `europe` | Europe | 49 GB |
+| `north_america` | North America, Central America, Greenland | 37 GB |
+| `oceania` | Australia, New Zealand, western Pacific | 4 GB |
+| `south_america` | South America | 9 GB |
+| `germany:12` | any of the above with a lower maximum zoom | each level less roughly halves the size |
 | `home=9.7,53.4,10.3,53.7:15` | your own area: name, then min_lon,min_lat,max_lon,max_lat and optionally the zoom (default 14) | |
+
+All regions except `world` use zoom 15, the most detailed level of the Protomaps data. The
+viewer zooms on to level 20: these are vector maps, so lines and labels stay sharp, but they
+show no more objects than at level 15. Regions can overlap. A region can't cross the 180th
+meridian, so islands east of it (e.g. Samoa, Hawaii in `oceania`) need an own entry
+such as `hawaii=-161,18,-154,23:15`.
+
+Maps are not paused by `download_window` once they have started, and `download_limit`
+does not apply to them.
 
 Some file systems of external drives (e.g. exFAT) don't allow measuring the progress of a
 map download; the log says so, and the percentage stays at 0 until the map is finished.

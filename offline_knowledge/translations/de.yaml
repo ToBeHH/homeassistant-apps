@@ -37,8 +37,9 @@ configuration:
   map_regions:
     name: Kartenregionen
     description: >-
-      Regionen für Offline-Karten: world (Übersicht), germany, dach, europe, optional
-      mit höchster Zoomstufe wie germany:12, oder ein eigener Ausschnitt als
+      Regionen für Offline-Karten: world (Übersicht), germany, dach, africa, antarctica, asia,
+      europe, north_america, oceania, south_america, optional mit höchster Zoomstufe wie
+      germany:12, oder ein eigener Ausschnitt als
       name=min_lon,min_lat,max_lon,max_lat[:zoom].
   map_update_days:
     name: Karten-Aktualisierung

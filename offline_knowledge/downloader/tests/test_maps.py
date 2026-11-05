@@ -47,7 +47,11 @@ class ParseTest(unittest.TestCase):
 
     def test_shipped_regions_load(self):
         regions = maps.load_regions()
-        self.assertIn("world", regions)
+        self.assertLessEqual(
+            {"world", "africa", "antarctica", "asia", "europe", "north_america",
+             "oceania", "south_america"},
+            set(regions),
+        )
         for r in regions.values():
             self.assertEqual(maps.parse(r.label, regions), r)
 
