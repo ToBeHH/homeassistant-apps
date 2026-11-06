@@ -184,7 +184,7 @@ that, the map is tried again at the next regular check.
 | `profile` | `slim`, `standard`, `full` or `custom`. |
 | `languages` | Language codes, e.g. `de`, `en`. |
 | `zim_sources` | Extra ZIM names without date, e.g. `wikipedia_de_all_maxi`. For `custom`, the complete list. |
-| `prune` | Delete content that is no longer selected (default: off). Older editions of selected content are always replaced. |
+| `prune` | Delete content from the Kiwix catalog that is no longer selected (default: off). Older editions of selected content are always replaced. [Your own ZIM files](#your-own-zim-files) stay. |
 | `download_window` | Only download in this daily window, e.g. `01:00-06:00`. A running download pauses outside it and resumes later. Empty: any time. |
 | `update_interval_days` | Look for new editions of the library every this many days (default 7). |
 | `download_limit` | Maximum download speed in KB/s, `0` for no limit. Library downloads only. |
@@ -238,6 +238,14 @@ entities:
       action: navigate
       navigation_path: /app/5f5e212b_offline_knowledge
 ```
+
+## Your own ZIM files
+
+Copy a ZIM file you made yourself into the `zim` folder under `data_path`. It appears in the
+library within a minute and stays there: the downloader only deletes or replaces files whose
+name it knows from the Kiwix catalog, even with `prune` on. So give your file a name of its own,
+not one that Kiwix uses as well. These files are excluded from backups like all other content,
+so keep a copy of anything you can't create again.
 
 ## Network
 

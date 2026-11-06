@@ -233,6 +233,8 @@ def _zim_jobs(opts, status, sources, window):
         status.item(e.key, kind="zim", title=e.title, state="current", file=e.filename, size=e.size)
     for name in p.keep:
         log.info("%s is no longer selected; kept (prune is off)", name)
+    for name in p.own:
+        log.info("%s isn't in the Kiwix catalog; treated as your own file and left alone", name)
 
     _remove(zim_dir, p.obsolete, "older edition")
     _remove(zim_dir, p.stale_parts, "unfinished download no longer needed")

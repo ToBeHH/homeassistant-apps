@@ -23,6 +23,7 @@ COPY channel_sync/kbsync /opt/kbsync/kbsync
 
 COPY rootfs /
 RUN chmod a+x /etc/services.d/*/run /etc/services.d/*/finish \
+    /etc/cont-init.d/* \
     /usr/local/bin/stdin-commands
 
 # Through nginx, which adds the path prefix. The first start migrates databases.

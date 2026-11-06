@@ -1,0 +1,10 @@
+#!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
+# ==============================================================================
+# Fill bashio's cache before the services start. Written by several of them at
+# once, it can fail, and that ends the service and with it the app.
+# ==============================================================================
+bashio::app.ingress_entry > /dev/null || true
+bashio::app.port "8081/tcp" > /dev/null || true
+bashio::app.version > /dev/null || true
+bashio::config 'data_path' > /dev/null || true

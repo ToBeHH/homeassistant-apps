@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.5
+
+- Fixed a rare crash at start, when services wrote the same cached value at the same moment.
+
 ## 0.1.4
 
 - AppArmor profile enforced: violations are now blocked instead of only logged.

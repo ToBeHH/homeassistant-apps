@@ -97,12 +97,21 @@ class PlanTest(unittest.TestCase):
         self.assertEqual(p.prune, [])
 
     def test_deselected_kept_unless_prune(self):
-        local = {"a": ["a_2026-10.zim"], "old": ["old_2025-01.zim"]}
+        local = {"a": ["a_2026-10.zim"], "c": ["c_2026-07.zim"]}
         p = plan.make(["a"], self.catalog, local)
-        self.assertEqual(p.keep, ["old_2025-01.zim"])
+        self.assertEqual(p.keep, ["c_2026-07.zim"])
         self.assertEqual(p.prune, [])
         p = plan.make(["a"], self.catalog, local, prune=True)
-        self.assertEqual(p.prune, ["old_2025-01.zim"])
+        self.assertEqual(p.prune, ["c_2026-07.zim"])
+
+    def test_own_file_survives_prune(self):
+        # Named like a Kiwix file, but the catalog doesn't know it.
+        local = {"a": ["a_2026-10.zim"], "mymanual_en_all": ["mymanual_en_all_2026-11.zim"]}
+        for prune in (False, True):
+            p = plan.make(["a"], self.catalog, local, prune=prune)
+            self.assertEqual(p.own, ["mymanual_en_all_2026-11.zim"])
+            self.assertEqual(p.prune, [])
+            self.assertEqual(p.keep, [])
 
     def test_leftover_old_edition_is_obsolete(self):
         local = {"a": ["a_2026-09.zim", "a_2026-10.zim"]}

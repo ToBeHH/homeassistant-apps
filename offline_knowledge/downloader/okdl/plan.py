@@ -46,6 +46,7 @@ class Plan:
     obsolete: list = dataclasses.field(default_factory=list)  # old editions
     prune: list = dataclasses.field(default_factory=list)  # deselected, delete
     keep: list = dataclasses.field(default_factory=list)  # deselected, kept
+    own: list = dataclasses.field(default_factory=list)  # not from the catalog, never touched
     stale_parts: list = dataclasses.field(default_factory=list)
 
 
@@ -58,6 +59,8 @@ def make(wanted, catalog, local, parts=(), prune=False):
     on disk. Files of
     keys that are no longer wanted are only deleted with prune=True. Older
     editions of a wanted key are deleted after the new one is in place.
+    A key the catalog doesn't know wasn't downloaded from it: that's the user's
+    own file (or a retired one), and it stays whatever prune says.
     """
     plan = Plan()
     for key in wanted:
@@ -77,7 +80,10 @@ def make(wanted, catalog, local, parts=(), prune=False):
             plan.replaces[entry.filename] = list(have)
     unwanted = sorted(set(local) - set(wanted))
     for key in unwanted:
-        (plan.prune if prune else plan.keep).extend(local[key])
+        if key not in catalog:
+            plan.own.extend(local[key])
+        else:
+            (plan.prune if prune else plan.keep).extend(local[key])
     planned = {e.filename + PART for e in plan.downloads}
     plan.stale_parts = [p for p in parts if p not in planned]
     # Smallest first: something useful arrives early, and a big file that

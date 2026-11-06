@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.1
+
+- Your own ZIM files stay: `prune` only deletes content from the Kiwix catalog. Before, it also
+  deleted any file named like `<name>_<YYYY-MM>.zim` in the `zim` folder.
+- Fixed a rare crash at start, when services wrote the same cached value at the same moment.
+
 ## 0.9.0
 
 - Sensors in Home Assistant over MQTT, if a broker is there: status, free space, content size
