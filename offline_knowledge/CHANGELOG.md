@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.0
+
+- Sensors in Home Assistant over MQTT, if a broker is there: status, free space, content size
+  and last update, on a device with a link to the start page. Option `ha_sensors`, on by
+  default. The documentation has a dashboard card.
+
 ## 0.8.0
 
 - The map viewer shows the world map under the selected region, so the map no longer ends at

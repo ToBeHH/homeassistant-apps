@@ -54,6 +54,11 @@ configuration:
     description: >-
       Suche nach Orten im Karten-Viewer und über MCP. Lädt etwa 450 MB von GeoNames und baut
       einen Suchindex, was bei großen Kartenregionen Stunden dauern kann.
+  ha_sensors:
+    name: Home-Assistant-Sensoren
+    description: >-
+      Status, freien Speicher, Inhaltsgröße und letzte Aktualisierung per MQTT an Home
+      Assistant senden. Braucht einen MQTT-Broker; ohne ihn passiert nichts.
 network:
   8899/tcp: >-
     Weboberfläche der Bibliothek. Standardmäßig aus; nur in einem vertrauenswürdigen

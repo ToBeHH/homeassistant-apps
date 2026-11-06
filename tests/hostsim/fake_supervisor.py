@@ -10,6 +10,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
         pass
 
     def do_GET(self):
+        if self.path.startswith("/services/"):
+            self.send_error(400)  # no such service, e.g. no MQTT broker
+            return
         if "info" in self.path:
             with open("/sim/info.json", encoding="utf-8") as f:
                 data = json.load(f)

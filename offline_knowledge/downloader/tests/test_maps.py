@@ -149,8 +149,9 @@ class WrittenBytesTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             path = os.path.join(d, "x.part")
             with open(path, "wb") as f:
-                f.truncate(10_000_000)
-            sparse = os.stat(path).st_blocks * 512 < 10_000_000
+                # Large enough: APFS may allocate small files whole on the first write.
+                f.truncate(100_000_000)
+            sparse = os.stat(path).st_blocks * 512 < 100_000_000
             if not sparse:
                 self.skipTest("file system does not support sparse files")
             self.assertLess(maps.written_bytes(path), 1_000_000)

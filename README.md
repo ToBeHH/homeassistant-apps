@@ -1,6 +1,6 @@
 # Offline Knowledge Add-ons for Home Assistant
 
-> **Status: work in progress.** Nothing here is ready to install yet; see [TODO.md](TODO.md) for the plan.
+> **Status: work in progress.** Nothing here is ready to install yet.
 
 Keep a copy of the world's knowledge at home, running as Home Assistant add-ons and
 working without an internet connection: Wikipedia and other reference works, offline maps,

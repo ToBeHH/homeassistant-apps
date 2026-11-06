@@ -8,7 +8,7 @@ import sys
 import time
 import urllib.request
 
-from . import catalog, control, geocode, maps, sync
+from . import catalog, control, geocode, hasensors, maps, sync
 from .status import Status
 
 DAY = 24 * 3600
@@ -26,6 +26,16 @@ def wait_for_library(url):
         except OSError:
             time.sleep(5)
     time.sleep(LIBRARY_SETTLE)
+
+
+def start_sensors(options, status_path, log):
+    try:
+        opts = sync.Options.load(options)
+    except (OSError, ValueError) as err:
+        log.warning("Home Assistant sensors off, can't read the options: %s", err)
+        return
+    if opts.ha_sensors:
+        hasensors.start(status_path, opts.data_path)
 
 
 def main(argv=None):
@@ -62,6 +72,7 @@ def main(argv=None):
             return geocode.search(query, sync.Options.load(args.options).data_path)
 
         control.serve(args.state_dir, args.token_file, args.control_port, places=places)
+        start_sensors(args.options, status.path, log)
     if args.wait_for:
         log.info("Waiting for the library server")
         wait_for_library(args.wait_for)

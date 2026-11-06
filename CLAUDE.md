@@ -26,7 +26,7 @@ but built as regular Supervisor-managed apps:
 
 ## Conventions
 
-- Code, config, DOCS/README/CHANGELOG: English. TODO.md and HANDOFF.md: German.
+- Code, config, DOCS/README/CHANGELOG: English.
 - App layout follows the official example (https://github.com/home-assistant/apps-example):
   `config.yaml`, `Dockerfile` with `ARG BUILD_FROM=…` default (no `build.yaml`, it is
   deprecated), `rootfs/` with s6 services under `etc/services.d/`, `translations/{en,de}.yaml`,

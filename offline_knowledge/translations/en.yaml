@@ -53,6 +53,11 @@ configuration:
     description: >-
       Search for places in the map viewer and through MCP. Downloads about 450 MB from
       GeoNames and builds a search index, which can take hours for large map regions.
+  ha_sensors:
+    name: Home Assistant sensors
+    description: >-
+      Send status, free space, content size and last update to Home Assistant over MQTT.
+      Needs an MQTT broker; without one nothing happens.
 network:
   8899/tcp: >-
     Library web interface. Off by default; only open it in a trusted local network.

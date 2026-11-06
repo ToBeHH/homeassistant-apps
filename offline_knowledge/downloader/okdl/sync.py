@@ -31,6 +31,7 @@ class Options:
         self.map_regions = list(raw.get("map_regions") or [])
         self.map_update_days = int(raw.get("map_update_days") or 0)
         self.place_search = bool(raw.get("place_search", False))
+        self.ha_sensors = bool(raw.get("ha_sensors", True))
 
     @classmethod
     def load(cls, path):

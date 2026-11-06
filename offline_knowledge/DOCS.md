@@ -192,6 +192,7 @@ that, the map is tried again at the next regular check.
 | `map_update_days` | Renew maps after this many days, `0` for never. |
 | `place_search` | Offline place search, see [Place search](#place-search). Default: off. |
 | `mcp_tools` | `full` or `lean`, see [MCP endpoint](#mcp-endpoint). |
+| `ha_sensors` | Send sensors to Home Assistant over MQTT, see [Sensors](#sensors-in-home-assistant). Default: on. |
 
 ## Access
 
@@ -202,6 +203,41 @@ that, the map is tried again at the next regular check.
   Home Assistant sidebar. Set a host port for `8899/tcp` under **Network** in the app
   settings; the start page then links to it. The library has **no login of its own** –
   anyone who can reach the port can read it.
+
+## Sensors in Home Assistant
+
+With the Mosquitto broker app and the MQTT integration, a device **Offline Knowledge** appears
+by itself. There is nothing to configure: the app gets the broker's address and a login from
+the Supervisor. A broker added later is picked up within a minute. Without one nothing happens.
+A broker outside Home Assistant (e.g. on a NAS) isn't supported, because the Supervisor doesn't
+know about it.
+
+| Sensor | Shows |
+| --- | --- |
+| `sensor.offline_knowledge_status` | What the downloader is doing, e.g. `idle` or `downloading`. Attributes: `message`, `problems` (content that failed), `last_check`, `next_check` |
+| `sensor.offline_knowledge_free_space` | Free space at the storage location, in GB |
+| `sensor.offline_knowledge_content_size` | Finished content (library, maps, search indexes), in GB |
+| `sensor.offline_knowledge_last_update` | When a check last finished without problems |
+
+The sensors become *unavailable* about 15 minutes after the app stops. With `ha_sensors` off
+the app doesn't contact the broker; to remove the device, delete it on the device page.
+
+```yaml
+type: entities
+title: Offline Knowledge
+entities:
+  - sensor.offline_knowledge_status
+  - sensor.offline_knowledge_free_space
+  - sensor.offline_knowledge_content_size
+  - sensor.offline_knowledge_last_update
+  - type: button
+    icon: mdi:bookshelf
+    name: Offline Knowledge
+    action_name: Open
+    tap_action:
+      action: navigate
+      navigation_path: /app/5f5e212b_offline_knowledge
+```
 
 ## Network
 

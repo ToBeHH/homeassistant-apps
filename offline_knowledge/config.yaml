@@ -1,6 +1,6 @@
 # https://developers.home-assistant.io/docs/apps/configuration
 name: Offline Knowledge
-version: "0.8.0"
+version: "0.9.0"
 slug: offline_knowledge
 description: >-
   Wikipedia and other reference works, offline maps and data tools,
@@ -12,6 +12,8 @@ arch:
 init: false
 startup: services
 stdin: true
+services:
+  - mqtt:want
 ingress: true
 panel_icon: mdi:bookshelf
 backup_exclude:
@@ -48,6 +50,7 @@ options:
   map_update_days: 30
   place_search: false
   mcp_tools: full
+  ha_sensors: true
 schema:
   data_path: str?
   profile: list(slim|standard|full|custom)
@@ -64,4 +67,5 @@ schema:
   map_update_days: int(0,)?
   place_search: bool?
   mcp_tools: list(full|lean)?
+  ha_sensors: bool?
 image: "ghcr.io/tobehh/ha-app-offline-knowledge"
