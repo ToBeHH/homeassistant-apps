@@ -126,6 +126,23 @@ class ExtractorTest(unittest.TestCase):
                 ex.extract("u", REGIONS["world"], os.path.join(d, "w.part"))
             self.assertIsNone(ex.dry_run("u", REGIONS["world"]))
 
+    def test_killed_means_out_of_memory(self):
+        ex = fake_extractor()
+        r = REGIONS["world"]
+        with mock.patch.dict(os.environ, {"FAKE_PMTILES_KILL": "dry"}):
+            with self.assertRaises(maps.OutOfMemory):
+                ex.dry_run("u", r)
+        with tempfile.TemporaryDirectory() as d, mock.patch.dict(os.environ, {"FAKE_PMTILES_KILL": "extract"}):
+            with self.assertRaises(maps.OutOfMemory):
+                ex.extract("u", r, os.path.join(d, "w.part"))
+
+    def test_memory_limit(self):
+        with mock.patch.dict(os.environ):
+            os.environ.pop("GOMEMLIMIT", None)
+            self.assertEqual(maps.Extractor._env()["GOMEMLIMIT"], maps.MEMORY_LIMIT)
+            os.environ["GOMEMLIMIT"] = "1GiB"
+            self.assertEqual(maps.Extractor._env()["GOMEMLIMIT"], "1GiB")
+
 
 class WrittenBytesTest(unittest.TestCase):
     def test_counts_data_not_the_preallocated_size(self):
@@ -205,6 +222,19 @@ class SyncMapsTest(unittest.TestCase):
             self.assertFalse(self.run_sync(s))
         self.assertEqual(os.listdir(os.path.join(self.data, "maps")), ["index.json"])
         self.assertEqual(self.status.data["items"]["map:world"]["state"], "error")
+
+    def test_out_of_memory_waits_for_the_next_check(self):
+        for stage in ("dry", "extract"):
+            with self.subTest(stage), Server() as s, mock.patch.dict(os.environ, {"FAKE_PMTILES_KILL": stage}):
+                self.serve(s)
+                # True: no retry within the hour.
+                self.assertTrue(self.run_sync(s))
+                item = self.status.data["items"]["map:world"]
+                self.assertEqual(item["state"], sync.NO_MEMORY)
+                self.assertIn("memory", item["message"])
+                self.assertEqual(self.status.data["message"], "finished with problems")
+                self.assertNotIn("last_success", self.status.data)
+                self.assertEqual(os.listdir(os.path.join(self.data, "maps")), ["index.json"])
 
     def test_build_list_down(self):
         with Server() as s:

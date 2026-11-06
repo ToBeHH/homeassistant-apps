@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.4
+
+- AppArmor profile enforced: violations are now blocked instead of only logged.
+
 ## 0.1.3
 
 - AppArmor profile, in complain mode for now: violations are only logged.

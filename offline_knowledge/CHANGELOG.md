@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.8.0
+
+- The map viewer shows the world map under the selected region, so the map no longer ends at
+  the region's edge. Needs `world` in `map_regions`.
+- A map that needs more memory than is free now says so (state "Not enough memory") instead
+  of `pmtiles extract failed (-9)`. It is tried again at the next regular check or with
+  **Check now**, not every hour: each attempt brought the whole host to its memory limit.
+- Map downloads need less memory (for `asia` about 4.4 GB instead of 6.4 GB) and, if memory
+  runs out anyway, the system stops the map download rather than another app.
+- AppArmor profile enforced: violations are now blocked instead of only logged.
+- Documentation: resource use measured with a large library.
+
 ## 0.7.0
 
 - Offline place search, off by default (`place_search`): towns, mountains, rivers and postal

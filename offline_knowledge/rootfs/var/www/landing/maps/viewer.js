@@ -15,22 +15,36 @@ const STORE = "okdl-map-region";
 const protocol = new pmtiles.Protocol();
 maplibregl.addProtocol("pmtiles", protocol.tile);
 
-function style(region) {
+function source(region) {
+  return {
+    type: "vector",
+    url: `pmtiles://${abs(`tiles/${encodeURIComponent(region.file)}`)}`,
+    attribution:
+      '<a href="https://protomaps.com">Protomaps</a> © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
+  };
+}
+
+// The world map, if there is one, lies under the region and fills the rest of the
+// screen. The region's land and water are opaque, so it hides what is below.
+function style(region, world) {
   const flavor = dark ? "dark" : "light";
+  const layers = (name) => basemaps.layers(name, basemaps.namedFlavor(flavor), { lang });
+  const under = world && world !== region;
   return {
     version: 8,
     // Appended, not resolved: URL() would percent-encode the {tokens}.
     glyphs: `${abs("fonts/")}{fontstack}/{range}.pbf`,
     sprite: abs(`sprites/v4/${flavor}`),
     sources: {
-      protomaps: {
-        type: "vector",
-        url: `pmtiles://${abs(`tiles/${encodeURIComponent(region.file)}`)}`,
-        attribution:
-          '<a href="https://protomaps.com">Protomaps</a> © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
-      },
+      protomaps: source(region),
+      ...(under ? { world: source(world) } : {}),
     },
-    layers: basemaps.layers("protomaps", basemaps.namedFlavor(flavor), { lang }),
+    layers: under
+      ? [
+          ...layers("world").map((l) => ({ ...l, id: `world-${l.id}` })),
+          ...layers("protomaps").filter((l) => l.type !== "background"),
+        ]
+      : layers("protomaps"),
   };
 }
 
@@ -60,6 +74,7 @@ const regions = await loadRegions();
 if (!regions.length) {
   document.getElementById("empty").hidden = false;
 } else {
+  const world = regions.find((r) => r.label === "world");
   let current = regions.find((r) => r.label === remembered()) || regions[0];
   const select = document.getElementById("region");
   for (const r of regions) {
@@ -73,7 +88,7 @@ if (!regions.length) {
 
   const map = new maplibregl.Map({
     container: "map",
-    style: style(current),
+    style: style(current, world),
     bounds: current.bbox,
     maxZoom: 20,
     hash: true,
@@ -85,7 +100,7 @@ if (!regions.length) {
   select.addEventListener("change", () => {
     current = regions.find((r) => r.label === select.value);
     remember(current.label);
-    map.setStyle(style(current));
+    map.setStyle(style(current, world));
     map.fitBounds(current.bbox, { animate: false });
   });
 
@@ -121,7 +136,7 @@ if (!regions.length) {
       current = region;
       select.value = region.label;
       remember(region.label);
-      map.setStyle(style(region));
+      map.setStyle(style(region, world));
     }
     if (marker) marker.remove();
     marker = new maplibregl.Marker().setLngLat([hit.lon, hit.lat]).addTo(map);

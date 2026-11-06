@@ -15,6 +15,7 @@ log = logging.getLogger(__name__)
 GB = 1000**3
 # Keep this much free on top of what the downloads need.
 MIN_RESERVE = 2 * GB
+NO_MEMORY = "no_memory"
 
 
 class Options:
@@ -135,7 +136,9 @@ def _progress(key, label, size, status):
 
 def run(opts, status, sources):
     """True when no download failed. Unknown names don't count: retrying
-    won't fix a typo in the options."""
+    won't fix a typo in the options. Neither do maps that ran out of memory:
+    each attempt brings the whole host to its limit, so they wait for the next
+    regular check or "Check now"."""
     status.reset_items()
     problem = storage_problem(opts.data_path)
     if problem:
@@ -177,10 +180,12 @@ def run(opts, status, sources):
     if opts.place_search and not geocode.update(opts, status, window):
         ok = False
 
+    items = status.data.get("items", {}).values()
+    clean = ok and not any(i.get("state") == NO_MEMORY for i in items)
     status.set(
         state="idle",
-        message="up to date" if ok else "finished with problems",
-        **({"last_success": now()} if ok else {}),
+        message="up to date" if clean else "finished with problems",
+        **({"last_success": now()} if clean else {}),
     )
     return ok
 
@@ -353,13 +358,22 @@ def _map_jobs(opts, status, sources, window):
         key = f"map:{r.label}"
         status.item(key, kind="map", title=r.title, state="queued", file=r.file, done=0)
         log.info("Map %s: %s, estimating size", r.label, reason)
-        size = sources.extractor.dry_run(url, r)
+        try:
+            size = sources.extractor.dry_run(url, r)
+        except maps.OutOfMemory as err:
+            _report_no_memory(key, err, status)
+            continue
         if size:
             status.item(key, size=size)
         jobs.append(
             (size or 0, key, lambda r=r, s=size: _extract_one(r, s, url, build_key, maps_dir, window, status, sources))
         )
     return True, jobs
+
+
+def _report_no_memory(key, err, status):
+    log.error("%s; trying again at the next regular check", err)
+    status.item(key, state=NO_MEMORY, message=str(err))
 
 
 def _extract_one(region, size, url, build_key, maps_dir, window, status, sources):
@@ -375,6 +389,10 @@ def _extract_one(region, size, url, build_key, maps_dir, window, status, sources
     status.item(key, state="downloading", done=0)
     try:
         sources.extractor.extract(url, region, part, progress=_progress(key, f"map {region.label}", size, status))
+    except maps.OutOfMemory as err:
+        _report_no_memory(key, err, status)
+        _remove(maps_dir, [region.file + maps.PART], "failed extract")
+        return True  # see run()
     except (OSError, maps.ExtractError) as err:
         log.error("Map %s failed: %s", region.label, err)
         status.item(key, state="error", message=str(err))

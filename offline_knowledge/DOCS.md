@@ -83,7 +83,8 @@ shown under **Open maps** on the start page.
 
 All regions except `world` use zoom 15, the most detailed level of the Protomaps data. The
 viewer zooms on to level 20: these are vector maps, so lines and labels stay sharp, but they
-show no more objects than at level 15. Regions can overlap. A region can't cross the 180th
+show no more objects than at level 15. With `world` in `map_regions`, the viewer shows the
+world map under the selected region, so the map doesn't end at the region's edge. Regions can overlap. A region can't cross the 180th
 meridian, so islands east of it (e.g. Samoa, Hawaii in `oceania`) need an own entry
 such as `hawaii=-161,18,-154,23:15`.
 
@@ -146,8 +147,34 @@ suits small models. `find_place` is always there. `full` (default) offers all of
 change the library's collections and favorites (`manage_collection`,
 `manage_favorites`) or start index builds (`build_index`).
 
-The MCP server needs about 100 MB of RAM on top of the library. New files show up about
+The MCP server needs about 70–100 MB of RAM on top of the library. New files show up about
 a minute after they arrive.
+
+## Resources
+
+Measured with version 0.7.0 on an 8-core x86-64 host with 16 GB RAM and a library of 16 ZIM
+files (222 GB), with the MCP server and place search on and no download running:
+
+| State | CPU (share of one core) | Process memory | Page cache |
+| --- | --- | --- | --- |
+| Idle | 0.4 % | 400 MB | 30 MB |
+| Searching, one client after the other | 5 % on average | 370 MB | up to 900 MB |
+| Searching, 4 clients at once | 35 % on average | 370 MB | up to 930 MB |
+
+Process memory includes what is swapped out. The page cache holds parts of the ZIM files; the
+system frees it when other programs need the memory. Most of the idle memory is Zimi (about
+230 MB), the downloader (90 MB) and the MCP server (70 MB).
+
+The first search took 28 s on this host, which was busy with other apps at the time. Later new
+searches took about 1 s, and repeated ones are answered from a cache at once.
+
+Map downloads need much more memory for a short time, because `pmtiles` loads the tile
+directories of the region. For `asia`, at least about 4.5 GB should be free: planning alone needed
+that much on a test machine; the download itself wasn't measured separately. Larger areas
+need more. If the memory isn't free, the system stops the download and the start page shows
+**Not enough memory**. Other regions and the library keep working. To get the map, free some
+memory and press **Check now**, or choose a lower zoom (`asia:14`) or a smaller area. Without
+that, the map is tried again at the next regular check.
 
 ## Configuration
 

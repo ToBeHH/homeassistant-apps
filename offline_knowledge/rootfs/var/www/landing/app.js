@@ -20,9 +20,10 @@ const ITEM_STATES = {
   error: "Failed",
   unknown: "Not in the Kiwix catalog",
   no_space: "Not enough space",
+  no_memory: "Not enough memory",
 };
 
-const ITEM_ORDER = ["downloading", "paused", "queued", "error", "no_space", "unknown", "current"];
+const ITEM_ORDER = ["downloading", "paused", "queued", "error", "no_space", "no_memory", "unknown", "current"];
 
 const $ = (sel) => document.querySelector(sel);
 

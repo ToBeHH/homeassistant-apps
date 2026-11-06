@@ -107,8 +107,7 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq apparmor-utils
-          sed 's/,complain)/)/' "${{ matrix.path }}/apparmor.txt" > profile.txt
-          sudo apparmor_parser -r -W profile.txt
+          sudo apparmor_parser -r -W "${{ matrix.path }}/apparmor.txt"
 
       - name: 🏗 Build the image
         run: docker build -t hostsim/app "./${{ matrix.path }}"

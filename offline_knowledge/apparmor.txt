@@ -1,8 +1,6 @@
 #include <tunables/global>
 
-# complain: violations are only logged. Remove it once a real host shows none:
-# journalctl _TRANSPORT="audit" -g 'apparmor="ALLOWED"'
-profile offline_knowledge flags=(attach_disconnected,mediate_deleted,complain) {
+profile offline_knowledge flags=(attach_disconnected,mediate_deleted) {
   #include <abstractions/base>
 
   # What s6-overlay and the services need; everything else stays forbidden.

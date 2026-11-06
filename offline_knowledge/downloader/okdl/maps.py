@@ -11,6 +11,7 @@ import json
 import logging
 import os
 import re
+import signal
 import subprocess
 import tempfile
 import time
@@ -28,12 +29,21 @@ INDEX = "index.json"
 PART = ".part"
 MAX_ZOOM = 15  # the planet build goes to 15
 CUSTOM_ZOOM = 14
+# pmtiles keeps the tile directories of the region in memory; the Go runtime lets
+# the heap grow to twice that unless told otherwise. Measured for asia: 6.4 GB
+# peak without the limit, 4.4 GB with it, same run time. A soft limit: pmtiles
+# may exceed it if it really needs to.
+MEMORY_LIMIT = "2500MiB"
 
 _LABEL = re.compile(r"^[a-z0-9][a-z0-9_-]{0,40}$")
 
 
 class ExtractError(Exception):
     pass
+
+
+class OutOfMemory(ExtractError):
+    """The kernel killed pmtiles. Trying again soon won't help."""
 
 
 @dataclasses.dataclass(frozen=True)
@@ -240,6 +250,27 @@ class Extractor:
         self.threads = threads
         self.poll = poll  # seconds between progress reports
 
+    @staticmethod
+    def _env():
+        return {"GOMEMLIMIT": MEMORY_LIMIT, **os.environ}
+
+    def _start(self, args, **kwargs):
+        proc = subprocess.Popen(args, env=self._env(), text=True, **kwargs)
+        # Short of memory, the kernel should take this process and not another app.
+        try:
+            with open(f"/proc/{proc.pid}/oom_score_adj", "w", encoding="ascii") as f:
+                f.write("1000")
+        except OSError:
+            pass
+        return proc
+
+    @staticmethod
+    def _out_of_memory(region):
+        return OutOfMemory(
+            f"not enough free memory for map {region.label} (killed by the system); "
+            "see Resources in the documentation"
+        )
+
     def _args(self, url, region, out):
         return self.command + [
             "extract",
@@ -251,31 +282,38 @@ class Extractor:
         ]
 
     def dry_run(self, url, region):
-        """Expected archive size in bytes, or None if it can't be told."""
+        """Expected archive size in bytes, or None if it can't be told.
+        Raises OutOfMemory: the extract itself would need at least as much."""
         try:
             with tempfile.TemporaryDirectory() as tmp:
-                res = subprocess.run(
+                proc = self._start(
                     self._args(url, region, os.path.join(tmp, region.file)) + ["--dry-run"],
-                    capture_output=True,
-                    text=True,
-                    timeout=900,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
                 )
+                try:
+                    out, err = proc.communicate(timeout=900)
+                except subprocess.TimeoutExpired:
+                    proc.kill()
+                    proc.communicate()
+                    raise
         except (OSError, subprocess.TimeoutExpired) as err:
             log.warning("Size estimate for %s failed: %s", region.label, err)
             return None
-        size = parse_dry_run(res.stdout + res.stderr)
-        if res.returncode != 0 or size is None:
-            log.warning("Size estimate for %s failed: %s", region.label, res.stderr.strip()[-300:])
+        if proc.returncode == -signal.SIGKILL:
+            raise self._out_of_memory(region)
+        size = parse_dry_run(out + err)
+        if proc.returncode != 0 or size is None:
+            log.warning("Size estimate for %s failed: %s", region.label, err.strip()[-300:])
         return size
 
     def extract(self, url, region, part, progress=None):
         if os.path.exists(part):
             os.remove(part)
-        proc = subprocess.Popen(
+        proc = self._start(
             self._args(url, region, part) + ["--quiet"],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.PIPE,
-            text=True,
         )
         measurable = None
         while proc.poll() is None:
@@ -291,6 +329,8 @@ class Extractor:
             if measurable:
                 progress(written)
         _, err = proc.communicate()
+        if proc.returncode == -signal.SIGKILL:
+            raise self._out_of_memory(region)
         if proc.returncode != 0:
             raise ExtractError(f"pmtiles extract failed ({proc.returncode}): {err.strip()[-300:]}")
         log.info("Map %s downloaded, verifying", region.label)

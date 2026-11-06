@@ -12,9 +12,6 @@ but built as regular Supervisor-managed apps:
   own content downloader, MCP endpoint
 - `kolibri/` – Kolibri learning platform
 
-The plan lives in **[TODO.md](TODO.md)** (German). Work through it phase by phase and tick
-items off there. Current state and next steps: **[HANDOFF.md](HANDOFF.md)**.
-
 ## Hard constraints
 
 - **Home Assistant OS only.** No Docker socket, no containers outside the Supervisor, no

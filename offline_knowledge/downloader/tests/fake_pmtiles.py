@@ -4,9 +4,11 @@
 extract <in> <out> ... [--dry-run]  writes 1000 bytes per zoom level
 verify <file>                       ok unless the file is empty
 FAKE_PMTILES_FAIL=1                 makes extract fail
+FAKE_PMTILES_KILL=dry|extract       gets it killed, as the kernel does when memory runs out
 """
 
 import os
+import signal
 import sys
 
 args = sys.argv[1:]
@@ -15,6 +17,8 @@ if cmd == "extract":
     out = args[2]
     zoom = int(next(a for a in args if a.startswith("--maxzoom=")).split("=")[1])
     size = 1000 * (zoom + 1)
+    if os.environ.get("FAKE_PMTILES_KILL") == ("dry" if "--dry-run" in args else "extract"):
+        os.kill(os.getpid(), signal.SIGKILL)
     if os.environ.get("FAKE_PMTILES_FAIL"):
         print("boom", file=sys.stderr)
         sys.exit(3)

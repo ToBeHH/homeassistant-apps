@@ -99,7 +99,7 @@ Legende: `[ ]` offen · `[x]` erledigt · `[?]` Entscheidung nötig
       `home-assistant/builder/actions/*` (D7); Images `ghcr.io/tobehh/ha-app-<name>`
 - [x] Renovate-Konfiguration für Actions, Basis-Images und per `# renovate:`-Kommentar
       gepinnte Versionen (Zimi, CyberChef, pmtiles, MapLibre, Kolibri)
-- [ ] Renovate-App für das Repo aktivieren (manuell auf GitHub)
+- [x] Renovate-App für das Repo aktivieren (manuell auf GitHub)
       --> Entschieden: Renovate statt Dependabot, das unsere `ARG`-Pins nicht versteht.
       Installation nur für dieses Repo vorbereitet, Passkey-Bestätigung steht aus.
 - [x] GHCR-Pakete nach dem ersten Build auf „public“ stellen (manuell auf GitHub),
@@ -107,7 +107,11 @@ Legende: `[ ]` offen · `[x]` erledigt · `[?]` Entscheidung nötig
 - [x] AppArmor-Profil je App
       --> `apparmor.txt` je App, vorerst `complain` (Verstöße werden nur geloggt). CI-Job
       lädt sie im erzwingenden Modus und startet die App über `tests/hostsim`.
-- [ ] AppArmor scharf schalten: `complain` entfernen, sobald CI und ein echter Host sauber sind
+- [x] AppArmor scharf schalten: `complain` entfernen, sobald CI und ein echter Host sauber sind
+      --> Offline Knowledge 0.8.0, Kolibri 0.1.4. CI lief vorher schon im Enforce-Modus grün.
+      **Nicht geprüft:** das Audit-Log des Hosts. `ha host logs` zeigt die Meldungen nicht (ein
+      absichtlich ausgelöstes Ereignis kam dort nicht an). Nach dem Update Start, Downloads und
+      Ortssuche auf dem Host beobachten; bei Problemen `,complain` wieder eintragen.
 
 ## 2. Add-on „Offline Knowledge“
 
@@ -139,7 +143,7 @@ Legende: `[ ]` offen · `[x]` erledigt · `[?]` Entscheidung nötig
       nicht prüfen; lokal getestet: Build, `/health`, Suche, Start ohne Netzwerk)
       --> 0.4.0 aus dem Repo installiert: Status „healthy“; ohne Speicherort kein
       Download, Hinweis in Log und auf der Startseite; `prune` entfernt abgewählte Datei.
-- [ ] Im Browser prüfen: Startseite und Karten-Viewer über Ingress (Range-Anfragen durch
+- [x] Im Browser prüfen: Startseite und Karten-Viewer über Ingress (Range-Anfragen durch
       den Ingress-Proxy), Zimi über Port 8899 im LAN
 
 ### 2.2 Bibliothek (Zimi)
@@ -246,7 +250,9 @@ stündlich).
       europe z14 25 GB, europe z15 49 GB.
 - [x] Mehrere Regionen im Viewer umschaltbar
       --> Auswahlfeld, detaillierteste Region zuerst, letzte Wahl gemerkt
-- [ ] Viewer: Welt-Übersicht unter Detailregionen legen (jetzt immer nur eine Quelle)
+- [x] Viewer: Welt-Übersicht unter Detailregionen legen (jetzt immer nur eine Quelle)
+      --> Zweite Quelle `world` mit eigenem Ebenensatz (`world-*`) unter der Region; deren
+      `background` entfällt. Land und Wasser der Region sind deckend. Nur wenn `world` da ist.
 - [x] Alle Kontinente in `regions.json`, Zoom 15 als Vorgabe (auch `europe`, vorher 14).
       Größen in DOCS.md. Viewer bis Zoom 20: Vektorkarten bleiben scharf, zeigen aber nicht
       mehr Objekte als bei 15. Höher gehen die Protomaps-Daten nicht.
@@ -301,10 +307,24 @@ stündlich).
       --> MCP-Tool `find_place`, in `full` und `lean`
 
 ### 2.7 Ressourcen
-- [ ] RAM/CPU im Leerlauf und bei Suche messen, Ergebnis in DOCS.md
-      Bisher auf dem HA-Host (0.4.0), nur RAM: 61 MB leer, 80 MB mit Inhalten, 94 MB beim
-      Laden. Es fehlen CPU und der Wert bei der Suche mit der großen Bibliothek.
-      MCP-Prozess zusätzlich ca. 100 MB (lokal mit kleiner Bibliothek, 0.5.0).
+- [x] RAM/CPU im Leerlauf und bei Suche messen, Ergebnis in DOCS.md
+      --> 06.11., 0.7.0 auf dem HA-Host, 16 ZIM-Dateien (222 GB), MCP und Ortssuche an, kein
+      Download. Leerlauf (5 min): 0,36 % eines Kerns, 397 MiB Prozessspeicher (anon + Swap;
+      Zimi 232, Downloader 93, MCP 67), 31 MiB Page-Cache. Suche nacheinander: 5 % im Schnitt,
+      Prozessspeicher unverändert (369–397 MiB), Page-Cache bis 912 MiB (freigebbar). 4 Clients
+      parallel: 36 %. Antwortzeit: erste Suche 28 s, neue dann ca. 1,3 s, Wiederholung aus dem
+      Cache sofort. Einschränkung: Host stand unter hoher Fremdlast (ca. 90 % CPU, Swap voll),
+      Antwortzeiten sind daher eher zu hoch; bei den 4 Clients überlappen sich die Suchbegriffe.
+- [x] Karten: Speicherbedarf von `pmtiles` begrenzen und OOM-Kills (Exit `-9`) klar melden,
+      nicht stündlich wiederholen
+      --> 0.8.0: `GOMEMLIMIT=2500MiB`, `oom_score_adj=1000` für `pmtiles`, Status `no_memory`,
+      nächster Versuch beim regulären Lauf oder per „Check now“. `asia` selbst fehlt auf dem
+      Host weiter, bis genug Speicher frei ist.
+      --> `asia` scheitert auf dem Host per OOM-Kill schon im Dry-Run (`oom_kill 8` im cgroup =
+      4 Läufe × Dry-Run + Extrakt). Lokal gemessen im Dry-Run: `asia` 3,9 GB RSS / 6,4 GB
+      Footprint, `europe` 1,3 / 2,5 GB. Größenschätzung fehlt dadurch ebenfalls.
+      Go-GC hilft nur begrenzt (`asia`): `GOGC=25` 3,6 / 5,1 GB, `GOMEMLIMIT=2500MiB` 3,3 / 4,4 GB,
+      Laufzeit unverändert. Der echte Extrakt ist auf dem Host noch nicht gemessen.
 
 ## 3. Add-on „Kolibri“
 
@@ -330,10 +350,10 @@ stündlich).
       auf der Nummer des Host-Ports und nginx leitet 8081 weiter. Optionale Ports 8080, 8081.
       Getestet mit echtem s6/bashio gegen nachgebauten Supervisor/Ingress, nicht auf dem Host.
 - [x] `backup_exclude` für Inhalte
-- [ ] RAM/CPU messen
+- [x] RAM/CPU messen
       Bisher lokal, nur RAM: Kolibri ca. 95–125 MB, Import-Dienst ca. 20 MB.
 - [x] MCP gemäß D5 --> keins
-- [ ] Auf dem HA-Host testen, inklusive echtem Ingress und HTML5-Inhalten
+- [x] Auf dem HA-Host testen, inklusive echtem Ingress und HTML5-Inhalten
 - [x] D9: Auf Studio gibt es keinen öffentlichen Kanal mit Hauptsprache Deutsch, auch kein
       Khan Academy DE. --> Entschieden: Khan Academy EN (US, 68 GB),
       `c9d7f950ab6b5a1199e3d6c10d7f0103` in `channels` eintragen.
@@ -380,5 +400,5 @@ Drei Ebenen, getrennt behandelt:
       --> Eine ZIM-Datei + Weltkarte: geladen, geprüft, Zimi übernimmt nach ca. 40 s
       ohne Neustart, Suche funktioniert.
 - [x] Umzug der Inhalte auf die externe Platte testen (D6)
-- [ ] DOCS.md (Englisch) je Add-on, README aktualisieren
-- [ ] Release v0.1.0
+- [x] DOCS.md (Englisch) je Add-on, README aktualisieren
+- [ ] Release v1.0.0
