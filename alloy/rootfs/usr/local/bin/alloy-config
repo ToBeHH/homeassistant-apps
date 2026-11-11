@@ -91,13 +91,14 @@ EOF
         fi
         for ((i = 0; i < count; i++)); do
             target=$(jq -c ".snmp_targets[${i}]" "${options}")
+            # Block labels must be identifiers: no dashes.
             name=$(jq -r '.name' <<< "${target}")
             community=$(jq -r '.community // "public"' <<< "${target}")
             auth=public_v2
             [[ "${community}" != "public" ]] && auth="community_${name}"
             cat <<EOF
 
-  target $(str "${name}") {
+  target $(str "${name//-/_}") {
     address = $(str "$(jq -r '.address' <<< "${target}")")
     module  = $(str "$(jq -r '.modules // "if_mib,hrStorage"' <<< "${target}")")
     auth    = $(str "${auth}")
