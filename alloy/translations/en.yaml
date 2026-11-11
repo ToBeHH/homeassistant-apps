@@ -1,0 +1,47 @@
+configuration:
+  remote_write_url:
+    name: Prometheus remote_write URL
+    description: >-
+      Endpoint for metrics, e.g. https://example.org/api/v1/write. Alloy starts only when this
+      and the token are set.
+  loki_url:
+    name: Loki push URL
+    description: >-
+      Endpoint for logs, e.g. https://example.org/loki/api/v1/push. Empty sends no logs.
+  token:
+    name: Bearer token
+    description: >-
+      Sent as "Authorization: Bearer" to both endpoints.
+  site:
+    name: Site
+    description: >-
+      External label "site", e.g. the location of this Home Assistant.
+  collector:
+    name: Collector
+    description: >-
+      External label "collector", unique per Alloy instance.
+  home_assistant_metrics:
+    name: Home Assistant metrics
+    description: >-
+      Scrape the prometheus integration of Home Assistant.
+  journal_logs:
+    name: Journal logs
+    description: >-
+      Send the host journal (Core, apps, OS) to Loki.
+  snmp_targets:
+    name: SNMP targets
+    description: >-
+      Devices polled via SNMPv2c, e.g. a NAS. Fields name, address, community (default public),
+      modules (default if_mib,hrStorage).
+  fritzbox_host:
+    name: FRITZ!Box host
+    description: >-
+      Address of the FRITZ!Box, e.g. fritz.box. Empty disables the FRITZ!Box exporter.
+  fritzbox_user:
+    name: FRITZ!Box user
+    description: >-
+      User with the right "FRITZ!Box Settings".
+  fritzbox_password:
+    name: FRITZ!Box password
+    description: >-
+      Password of that user.

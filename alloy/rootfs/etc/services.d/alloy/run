@@ -1,0 +1,31 @@
+#!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
+# ==============================================================================
+# Grafana Alloy – configuration from the app options, then the agent
+# ==============================================================================
+
+declare config=/run/alloy/config.alloy
+declare rc=0
+
+bashio::log.info "Grafana Alloy app $(bashio::app.version) starting"
+mkdir -p /run/alloy /data/alloy
+
+alloy-config "${config}" || rc=$?
+if [[ "${rc}" -eq 3 ]]; then
+    bashio::log.warning "remote_write_url or token not set. Alloy does not start until both are configured."
+    exec sleep infinity
+elif [[ "${rc}" -ne 0 ]]; then
+    bashio::log.error "Could not write the Alloy configuration (exit code ${rc})"
+    exit "${rc}"
+fi
+bashio::log.info "Alloy configuration written"
+
+ALLOY_TOKEN=$(bashio::config 'token')
+export ALLOY_TOKEN
+
+# The write-ahead log in /data buffers samples while the endpoint is unreachable.
+exec alloy run \
+    --storage.path=/data/alloy \
+    --server.http.listen-addr=127.0.0.1:12345 \
+    --disable-reporting \
+    "${config}"

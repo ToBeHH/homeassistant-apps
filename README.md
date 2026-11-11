@@ -18,6 +18,7 @@ with Project NOMAD or Crosstalk Solutions.
 | --- | --- | --- |
 | [Offline Knowledge](offline_knowledge/) | [Zimi](https://github.com/epheterson/Zimi) for Kiwix ZIM archives (Wikipedia, Wiktionary, Gutenberg, …), [CyberChef](https://github.com/gchq/CyberChef), an offline map viewer for [Protomaps](https://protomaps.com) PMTiles, and an MCP server | experimental |
 | [Kolibri](kolibri/) | [Kolibri](https://learningequality.org/kolibri/) learning platform (e.g. Khan Academy channels) | experimental |
+| [Grafana Alloy](alloy/) | [Grafana Alloy](https://grafana.com/docs/alloy/) sending Home Assistant metrics, the host journal, SNMP and FRITZ!Box metrics to Prometheus/Loki (needs internet, unlike the others) | experimental |
 
 ## Installation
 

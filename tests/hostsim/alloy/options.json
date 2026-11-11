@@ -1,0 +1,4 @@
+{"remote_write_url": "http://supervisor/sim/api/v1/write", "loki_url": "http://supervisor/sim/loki/api/v1/push",
+ "token": "hostsim-only", "site": "sim", "collector": "sim", "home_assistant_metrics": true, "journal_logs": true,
+ "snmp_targets": [{"name": "nas", "address": "192.0.2.10"}],
+ "fritzbox_host": "", "fritzbox_user": "", "fritzbox_password": ""}

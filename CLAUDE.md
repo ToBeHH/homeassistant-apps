@@ -11,6 +11,8 @@ but built as regular Supervisor-managed apps:
 - `offline_knowledge/` – Zimi (Kiwix ZIM library), CyberChef, Protomaps map viewer,
   own content downloader, MCP endpoint
 - `kolibri/` – Kolibri learning platform
+- `alloy/` – Grafana Alloy agent for central monitoring; the one app that sends data out (to
+  the endpoints in its options). Debian base, because the Alloy binary needs glibc.
 
 ## Hard constraints
 
@@ -20,7 +22,7 @@ but built as regular Supervisor-managed apps:
   empty, missing or not writable.
 - **Content never goes into git or images.** ZIM files, PMTiles, Kolibri channels are
   downloaded at runtime into `data_path` and excluded from HA backups (`backup_exclude`).
-- **Local network only.** No telemetry. Zimi's BitTorrent, UPnP and "Nearby" stay off.
+- **Local network only** (except `alloy`, whose purpose is sending to configured endpoints). No telemetry. Zimi's BitTorrent, UPnP and "Nearby" stay off.
 - **Public repo.** No IP addresses, host names, VPN details, tokens or personal data in
   commits.
 

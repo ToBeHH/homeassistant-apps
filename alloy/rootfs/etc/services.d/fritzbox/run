@@ -1,0 +1,19 @@
+#!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
+# ==============================================================================
+# FRITZ!Box exporter (TR-064), only when fritzbox_host is set. Listens on
+# 127.0.0.1 only; Alloy scrapes it.
+# ==============================================================================
+
+if ! bashio::config.has_value 'fritzbox_host'; then
+    exec sleep infinity
+fi
+
+FRITZ_HOSTNAME=$(bashio::config 'fritzbox_host')
+FRITZ_USERNAME=$(bashio::config 'fritzbox_user')
+FRITZ_PASSWORD=$(bashio::config 'fritzbox_password')
+export FRITZ_HOSTNAME FRITZ_USERNAME FRITZ_PASSWORD
+export FRITZ_NAME="${FRITZ_HOSTNAME}" FRITZ_LISTEN_ADDRESS=127.0.0.1 FRITZ_PORT=9787 FRITZ_LOG_LEVEL=WARNING
+
+bashio::log.info "FRITZ!Box exporter for ${FRITZ_HOSTNAME} starting"
+exec fritzexporter

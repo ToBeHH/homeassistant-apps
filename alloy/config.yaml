@@ -1,0 +1,49 @@
+# https://developers.home-assistant.io/docs/apps/configuration
+name: Grafana Alloy
+version: "0.1.0"
+slug: alloy
+description: >-
+  Sends Home Assistant metrics, the host journal and optional SNMP and FRITZ!Box
+  metrics to a Prometheus remote_write and a Loki endpoint.
+url: "https://github.com/ToBeHH/homeassistant-apps/tree/main/alloy"
+stage: experimental
+arch:
+  - amd64
+init: false
+startup: services
+# Supervisor token for /core/api/prometheus; no long-lived token needed.
+homeassistant_api: true
+# Read-only host journal under /var/log/journal.
+journald: true
+backup_exclude:
+  # Write-ahead log: buffered samples, worthless in a restore.
+  - "alloy"
+options:
+  remote_write_url: ""
+  loki_url: ""
+  token: ""
+  site: ""
+  collector: ""
+  home_assistant_metrics: true
+  journal_logs: true
+  snmp_targets: []
+  fritzbox_host: ""
+  fritzbox_user: ""
+  fritzbox_password: ""
+schema:
+  remote_write_url: url?
+  loki_url: url?
+  token: password?
+  site: match(^[a-z0-9-]*$)?
+  collector: match(^[a-z0-9-]*$)?
+  home_assistant_metrics: bool?
+  journal_logs: bool?
+  snmp_targets:
+    - name: match(^[a-z0-9-]+$)
+      address: str
+      community: password?
+      modules: str?
+  fritzbox_host: str?
+  fritzbox_user: str?
+  fritzbox_password: password?
+image: "ghcr.io/tobehh/ha-app-alloy"

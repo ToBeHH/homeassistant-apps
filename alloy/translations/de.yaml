@@ -1,0 +1,47 @@
+configuration:
+  remote_write_url:
+    name: Prometheus-remote_write-URL
+    description: >-
+      Ziel für Metriken, z. B. https://example.org/api/v1/write. Alloy startet erst, wenn diese
+      URL und das Token gesetzt sind.
+  loki_url:
+    name: Loki-Push-URL
+    description: >-
+      Ziel für Logs, z. B. https://example.org/loki/api/v1/push. Leer schickt keine Logs.
+  token:
+    name: Bearer-Token
+    description: >-
+      Wird als "Authorization: Bearer" an beide Ziele geschickt.
+  site:
+    name: Standort
+    description: >-
+      Externes Label "site", z. B. der Standort dieses Home Assistant.
+  collector:
+    name: Sender
+    description: >-
+      Externes Label "collector", eindeutig je Alloy-Instanz.
+  home_assistant_metrics:
+    name: Home-Assistant-Metriken
+    description: >-
+      Die Prometheus-Integration von Home Assistant abfragen.
+  journal_logs:
+    name: Journal-Logs
+    description: >-
+      Das Journal des Hosts (Core, Apps, OS) an Loki schicken.
+  snmp_targets:
+    name: SNMP-Ziele
+    description: >-
+      Geräte, die per SNMPv2c abgefragt werden, z. B. ein NAS. Felder name, address, community
+      (Standard public), modules (Standard if_mib,hrStorage).
+  fritzbox_host:
+    name: FRITZ!Box-Adresse
+    description: >-
+      Adresse der FRITZ!Box, z. B. fritz.box. Leer schaltet den FRITZ!Box-Exporter ab.
+  fritzbox_user:
+    name: FRITZ!Box-Benutzer
+    description: >-
+      Benutzer mit dem Recht "FRITZ!Box Einstellungen".
+  fritzbox_password:
+    name: FRITZ!Box-Passwort
+    description: >-
+      Passwort dieses Benutzers.

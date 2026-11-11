@@ -32,6 +32,17 @@ mkdir -p "${work}/data" "${work}/share/sim"
 options=${OPTIONS:-${here}/${app}/options.json}
 cp "${options}" "${work}/data/options.json"
 
+# Apps with ingress bring nginx and python3, so the fake Supervisor runs in their image. Apps
+# without ingress (marker file no-ingress) get a plain Python image and no ingress check.
+ingress=1
+sup_image=${image}
+sup_cmd='nginx -c /ingress.conf; exec python3 /fake_supervisor.py'
+if [[ -f "${here}/${app}/no-ingress" ]]; then
+    ingress=0
+    sup_image=${SUP_IMAGE:-python:3.13-alpine}
+    sup_cmd='exec python3 /fake_supervisor.py'
+fi
+
 docker network create --subnet 172.30.32.0/24 --gateway 172.30.32.254 hostsim >/dev/null
 docker run -d --name hostsim-sup --network hostsim --ip 172.30.32.2 \
     --network-alias supervisor -p 28123:8123 \
@@ -39,8 +50,15 @@ docker run -d --name hostsim-sup --network hostsim --ip 172.30.32.2 \
     -v "${here}/ingress.conf:/ingress.conf:ro" \
     -v "${here}/${app}/info.json:/sim/info.json:ro" \
     -v "${options}:/sim/options.json:ro" \
-    --entrypoint sh "${image}" \
-    -c 'nginx -c /ingress.conf; exec python3 /fake_supervisor.py' >/dev/null
+    --entrypoint sh "${sup_image}" \
+    -c "${sup_cmd}" >/dev/null
+
+# The app asks the Supervisor right at start; wait until the fake one answers.
+for _ in $(seq 1 30); do
+    docker exec hostsim-sup python3 -c 'import urllib.request; urllib.request.urlopen("http://127.0.0.1/info")' \
+        >/dev/null 2>&1 && break
+    sleep 1
+done
 
 security=()
 if [[ -n "${profile}" ]]; then
@@ -76,15 +94,21 @@ while :; do
     sleep 5
 done
 
-docker exec hostsim-app curl -fsS -o /dev/null http://127.0.0.1:8099/
-code=$(curl -sL -o /dev/null -w '%{http_code}' http://localhost:28123/api/hassio_ingress/TOK/)
-if [[ "${code}" != "200" ]]; then
-    logs | tail -40
-    echo "FAILED: ingress answered ${code}" >&2
-    exit 1
+if [[ "${ingress}" == 1 ]]; then
+    docker exec hostsim-app curl -fsS -o /dev/null http://127.0.0.1:8099/
+    code=$(curl -sL -o /dev/null -w '%{http_code}' http://localhost:28123/api/hassio_ingress/TOK/)
+    if [[ "${code}" != "200" ]]; then
+        logs | tail -40
+        echo "FAILED: ingress answered ${code}" >&2
+        exit 1
+    fi
 fi
 logs | grep -E "Traceback|Halt app" && {
     echo "FAILED: errors in the log" >&2
     exit 1
 }
-echo "OK: ${app} is up, ingress answers"
+if [[ "${ingress}" == 1 ]]; then
+    echo "OK: ${app} is up, ingress answers"
+else
+    echo "OK: ${app} is up"
+fi
